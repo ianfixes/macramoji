@@ -1,0 +1,29 @@
+{
+  "name": "extensimoji",
+  "description": "A Slack-centric macro language for altering emoji",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "author": "Ian Katz <ianfixes@gmail.com>",
+  "homepage": "https://github.com/ifreecarve/extensimoji#readme",
+  "main": "lib",
+  "scripts": {
+    "test": "coffeetape test/*.coffee",
+    "prepublish": "coffee --bare -o lib -c src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ifreecarve/extensimoji.git"
+  },
+  "keywords": [
+    "emoji",
+    "macro",
+    "slack"
+  ],
+  "bugs": {
+    "url": "https://github.com/ifreecarve/extensimoji/issues"
+  },
+  "devDependencies": {
+    "coffeetape": "^1.0.1",
+    "sinon": "^2.2.0"
+  }
+}
