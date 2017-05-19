@@ -4,7 +4,7 @@ test        = require 'tape'
 sinon       = require 'sinon'
 Extensimoji = require '../src/'
 
-input1 = ':(:dealwithit(:poop:, :kamina-glasses:):)splosion:'
+input1 = ':(dealwithit(:poop:, :kamina-glasses:))splosion:'
 
 test 'parser', (troot) ->
   test 'exists', (t) ->

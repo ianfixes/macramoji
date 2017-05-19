@@ -30,14 +30,14 @@
 %%
 
 extensimoji
-  : emojifunk EOF
+  : ':' emojifunk ':' EOF
     { return $emojifunk; }
   ;
 
 emojifunk
-  : ':' var '(' arg_list ')' ':'
+  : var '(' arg_list ')'
     { $$ = { 'entity': 'funk', 'name': $var, 'args': $arg_list }; }
-  | ':' '(' arg_list ')' var ':'
+  | '(' arg_list ')' var
     { $$ = { 'entity': 'funk', 'name': $var, 'args': $arg_list }; }
   ;
 

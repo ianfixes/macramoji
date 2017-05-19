@@ -2,7 +2,7 @@ test        = require 'tape'
 sinon       = require 'sinon'
 Extensimoji = require '../src/'
 
-input1 = ':(:dealwithit(:poop:, :kamina-glasses:):)splosion:'
+input1 = ':(dealwithit(:poop:, :kamina-glasses:))splosion:'
 
 test 'extensimoji', (troot) ->
   test 'understands positional arguments and initializes proper vars', (t) ->
@@ -102,11 +102,6 @@ test 'extensimoji', (troot) ->
     # isn't there now
     t.equal(ee.invalidFunkNames(entities).length, 1)
     t.end()
-
-  test "get dates", (t) ->
-    t.equal((new Date).getTime(), 2)
-    t.end()
-
 
   test 'can reduce (tree into array)', (t) ->
     ee = new Extensimoji({}, undefined, undefined)
