@@ -7,8 +7,10 @@
   "homepage": "https://github.com/ifreecarve/extensimoji#readme",
   "main": "lib",
   "scripts": {
-    "test": "coffeetape test/*.coffee",
-    "prepublish": "coffee --bare -o lib -c src"
+    "test": "istanbul cover --print none coffeetape test/*.coffee && coffeelint src/ test/",
+    "prepublish": "coffee --bare -o lib -c src",
+    "pretest": "coffeeCoverage --inst istanbul --exclude node_modules . coverage-lib ",
+    "posttest": "istanbul report text"
   },
   "repository": {
     "type": "git",
@@ -23,7 +25,9 @@
     "url": "https://github.com/ifreecarve/extensimoji/issues"
   },
   "devDependencies": {
+    "coffee-coverage": "^2.0.1",
     "coffeetape": "^1.0.1",
+    "istanbul": "^0.4.5",
     "sinon": "^2.2.0"
   }
 }
