@@ -1,7 +1,9 @@
 emojiParser = require './parser'
+EmojiStore = require './emojiStore'
 
 class Extensimoji
   constructor: (@slackClient, @macros, @onError) ->
+    @emoji = EmojiStore(@slackClient)
 
   parser: ->
     emojiParser
@@ -38,6 +40,30 @@ class Extensimoji
 
   invalidEmojiNames: (entities, definedEmoji) ->
     @invalidAnything entities, 'emoji', definedEmoji
+
+  # we convert the parse tree to an imageWorker tree
+  prepare: (parseTree) ->
+    # if emoji names are invalid
+    #   if we can actually fetch
+    #     fetch and on completion, process tree IF FUNKS ARE OK
+    #   else
+    #     private reply:
+    # else if emoji names are invalid
+
+  # prepare the imageWorker tree
+  # then process it
+  processTree: (parseTree) ->
+    {}
+
+  # get a message
+  # see if its parseable
+  # prepare it for processing
+  # process it
+  # upload it if things worked
+  # else DM the user to say what went wrong
+  # delete the temp files (cleanup)
+  respondToChatMessage: (slackMessageObject) ->
+    {}
 
   reduce: (parseTree, acc, onEach) ->
     here = onEach(acc, parseTree)

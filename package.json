@@ -29,5 +29,8 @@
     "coffeetape": "^1.0.1",
     "istanbul": "^0.4.5",
     "sinon": "^2.2.0"
+  },
+  "dependencies": {
+    "tmp": "0.0.31"
   }
 }

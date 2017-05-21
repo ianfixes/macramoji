@@ -120,4 +120,5 @@ test 'extensimoji', (troot) ->
     ]
     t.deepEqual(entities, expected)
     t.end()
+
   troot.end()
