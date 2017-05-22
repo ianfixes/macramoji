@@ -39,15 +39,21 @@ makeWorkFn = (url) ->
         onComplete(ret)
 
 test 'WIP', (troot) ->
-  test 'can download and cleanup', (t) ->
+  test 'can download, run stats, and cleanup', (t) ->
     favico = 'http://tinylittlelife.org/favicon.ico'
     doTheThing = makeWorkFn(favico)
     doTheThing [], (result) ->
-      t.equal(result.size(), 43)
       t.true(fs.existsSync(result.imgPath()), 'the temp image should exist')
-      result.cleanup()
-      t.false(fs.existsSync(result.imgPath()), 'the temp image should be gone')
-      t.end()
+      t.equal(result.size(), 43)
+      result.dimensions (err, dims) ->
+        t.fail(err) if err
+        t.deepEqual(dims, {height: 1, width: 1})
+        result.normalDimension (err, dim) ->
+          t.fail(err) if err
+          t.equal(dim, 1)
+          result.cleanup()
+          t.false(fs.existsSync(result.imgPath()), 'image should be deleted')
+          t.end()
 
   test 'enforces work functions returning ImageResult objects', (t) ->
     t.end()

@@ -1,10 +1,8 @@
 fs = require 'fs'
+gm = require 'gm'
 
 class ImageContainer
   constructor: (@path, @cleanupCallback) ->
-
-  cleanup: ->
-    @cleanupCallback()
 
 class ImageResult
   constructor: ->
@@ -19,7 +17,7 @@ class ImageResult
     errorMessages.forEach (v) => @errorMessages.push(v)
 
   cleanup: ->
-    i.cleanup() for i in @allTempImages()
+    i.cleanupCallback() for i in @allTempImages()
 
   imgPath: ->
     @resultImage && @resultImage.path
@@ -41,6 +39,19 @@ class ImageResult
     ret
 
   size: ->
-    fs.statSync(@imgPath()).size
+    p = @imgPath()
+    p && fs.statSync(p).size
+
+  # raw dimension
+  # callback gives (err, {width: x, height: y})
+  dimensions: (cb) ->
+    gm(@imgPath()).size cb
+
+  # whichever dimension is bigger
+  # callback gives (err, dimensionInteger)
+  normalDimension: (cb) ->
+    @dimensions (err, dims) ->
+      return cb(err) if err
+      cb(null, if dims.width > dims.height then dims.width else dims.height)
 
 module.exports = ImageResult
