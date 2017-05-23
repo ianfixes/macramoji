@@ -30,9 +30,11 @@ test 'parser', (troot) ->
     expected =
       entity: 'funk'
       name: 'splosion'
+      is: 'suffix'
       args: [
         entity: 'funk'
         name: 'dealwithit'
+        is: 'prefix'
         args: [
           {
             entity: 'emoji'

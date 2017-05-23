@@ -36,9 +36,9 @@ extensimoji
 
 emojifunk
   : var '(' arg_list ')'
-    { $$ = { 'entity': 'funk', 'name': $var, 'args': $arg_list }; }
+    { $$ = { 'entity': 'funk', 'is': 'prefix', 'name': $var, 'args': $arg_list }; }
   | '(' arg_list ')' var
-    { $$ = { 'entity': 'funk', 'name': $var, 'args': $arg_list }; }
+    { $$ = { 'entity': 'funk', 'is': 'suffix', 'name': $var, 'args': $arg_list }; }
   ;
 
 expr
