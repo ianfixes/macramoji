@@ -1,5 +1,6 @@
 emojiParser = require './parser'
-EmojiStore = require './emojiStore'
+unparser    = require './unparser'
+EmojiStore  = require './emojiStore'
 
 class Extensimoji
   constructor: (@slackClient, @macros, @onError) ->

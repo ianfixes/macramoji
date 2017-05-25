@@ -1,7 +1,8 @@
-ImageResult = require '../src/'
+ImageResult = require '../src/imageResult'
 
 http = require 'http'
 fs = require 'fs'
+async = require 'async'
 
 # TODO: if bubbling up an error, we should make a call stack
 class ImageWorker

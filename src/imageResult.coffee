@@ -10,17 +10,14 @@ class ImageResult
     @errorMessages = []
     @resultImage   = null
 
-  addTempImages: (imageContainers) ->
-    imageContainers.forEach (v) => @tempImages.push(v)
-
-  addErrors: (errorMessages) ->
-    errorMessages.forEach (v) => @errorMessages.push(v)
-
   cleanup: ->
     i.cleanupCallback() for i in @allTempImages()
 
   imgPath: ->
     @resultImage && @resultImage.path
+
+  isValid: ->
+    @resultImage?
 
   addResult: (path, cleanupFn) ->
     @resultImage = new ImageContainer(path, cleanupFn)
@@ -32,17 +29,11 @@ class ImageResult
     else
       @tempImages
 
-  supercede: ->
-    ret = new ImageResult()
-    ret.addTempImages(@allTempImages)
-    ret.addErrors(@errorMessages)
-    ret
-
   size: ->
     p = @imgPath()
     p && fs.statSync(p).size
 
-  # raw dimension
+  # raw dimensions
   # callback gives (err, {width: x, height: y})
   dimensions: (cb) ->
     gm(@imgPath()).size cb

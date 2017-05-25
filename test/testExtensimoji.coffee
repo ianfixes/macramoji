@@ -5,6 +5,43 @@ Extensimoji = require '../src/'
 input1 = ':(dealwithit(:poop:, :kamina-glasses:))splosion:'
 
 test 'extensimoji', (troot) ->
+  test 'parser exists', (t) ->
+    ee = new Extensimoji({}, undefined, undefined)
+    t.ok(ee.parser(), 'parser exists')
+    t.end()
+
+  test 'parser parses positive input', (t) ->
+    ee = new Extensimoji({}, undefined, undefined)
+    t.equal(ee.parseable(input1), true)
+    t.end()
+
+  test 'does not parse negative input', (t) ->
+    onErr = sinon.spy()
+    ee = new Extensimoji({}, undefined, onErr)
+    t.equal(ee.parseable(input1 + "crap"), false)
+    t.assert(onErr.firstCall.args[0].message.includes("Expecting 'EOF'"),
+      "Error message includes parse info")
+    t.end()
+
+  test 'can reduce (tree into array)', (t) ->
+    ee = new Extensimoji({}, undefined, undefined)
+    parseTree = ee.parse(input1)
+    entities = ee.reduce(parseTree, [], (acc, tree) ->
+      acc.concat([
+        entity: tree.entity
+        name: tree.name
+      ])
+    )
+    expected = [
+      { entity: 'funk', name: 'splosion' },
+      { entity: 'funk', name: 'dealwithit' },
+      { entity: 'emoji', name: 'poop' },
+      { entity: 'emoji', name: 'kamina-glasses' }
+    ]
+    t.deepEqual(entities, expected)
+    t.end()
+
+
   test 'understands positional arguments and initializes proper vars', (t) ->
     ee = new Extensimoji('foo', 'bar', 'baz')
     t.equal(ee.slackClient, 'foo')

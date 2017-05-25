@@ -20,6 +20,7 @@ download = (url, dest, cb) ->
     cb(err.message) if (cb)
   )
 
+# TODO: this will eventually be part of the emoji store
 makeWorkFn = (url) ->
   # onComplete takes an ImageResult
   return (argsWhichAreImageResults, onComplete) ->
