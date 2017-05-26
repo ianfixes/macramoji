@@ -1,5 +1,6 @@
-fs = require 'fs'
-gm = require 'gm'
+tmp = require 'tmp'
+fs  = require 'fs'
+gm  = require 'gm'
 
 class ImageContainer
   constructor: (@path, @cleanupCallback) ->
@@ -21,6 +22,32 @@ class ImageResult
 
   addResult: (path, cleanupFn) ->
     @resultImage = new ImageContainer(path, cleanupFn)
+
+  # callback takes (err, imgContainer)
+  createTempImage: (callback) ->
+    tmp.file { discardDescriptor: true }, (err, path, fd, cleanupCallback) ->
+      if err
+        callback(err)
+      else
+        ret = new ImageContainer(path, cleanupCallback)
+        callback(null, ret)
+
+  # callback takes (err, tmpImagePath)
+  # TODO: it's late and i feel like this is a dumb way to structure
+  #   these callbacks
+  addTempImage: (callback) ->
+    @createTempImage (err, imgContainer) =>
+      return callback(err) if err
+      @tempImages.push imgContainer
+      callback(null, imgContainer.path)
+
+  # callback takes (err, tmpImagePath)
+  addResultImage: (callback) ->
+    @createTempImage (err, imgContainer) =>
+      return callback(err) if err
+      @resultImage = imgContainer
+      callback(null, imgContainer.path)
+
 
   # means we are disposing of this container and making another one
   allTempImages: ->
@@ -44,5 +71,17 @@ class ImageResult
     @dimensions (err, dims) ->
       return cb(err) if err
       cb(null, if dims.width > dims.height then dims.width else dims.height)
+
+  addTempImages: (imageContainers) ->
+    imageContainers.forEach (v) => @tempImages.push(v)
+
+  addErrors: (errorMessages) ->
+    errorMessages.forEach (v) => @errorMessages.push(v)
+
+  supercede: ->
+    ret = new ImageResult()
+    ret.addTempImages(@allTempImages)
+    ret.addErrors(@errorMessages)
+    ret
 
 module.exports = ImageResult

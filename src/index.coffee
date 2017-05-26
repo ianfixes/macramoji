@@ -43,17 +43,16 @@ class Extensimoji
     @invalidAnything entities, 'emoji', definedEmoji
 
   # we convert the parse tree to an imageWorker tree
-  prepare: (parseTree) ->
-    # if emoji names are invalid
-    #   if we can actually fetch
-    #     fetch and on completion, process tree IF FUNKS ARE OK
-    #   else
+  # don't forget to add the unparsed string as the first arg of imageworker
+  # this callback does NOT take an imageworker... TODO what then
+  prepare: (parseTree, callback) ->
+    # if any names are invalid
     #     private reply:
-    # else if emoji names are invalid
+    #
 
   # prepare the imageWorker tree
   # then process it
-  processTree: (parseTree) ->
+  processTree: (parseTree, callback) ->
     {}
 
   # get a message
