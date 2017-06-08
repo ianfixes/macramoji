@@ -45,12 +45,12 @@
     "value": "unix"
   },
   "max_line_length": {
-    "value": 80,
+    "value": 132,
     "level": "error",
     "limitComments": true
   },
   "missing_fat_arrows": {
-    "level": "ignore",
+    "level": "error",
     "is_strict": false
   },
   "newlines_after_classes": {
@@ -97,7 +97,7 @@
     "level": "error"
   },
   "no_this": {
-    "level": "ignore"
+    "level": "error"
   },
   "no_throwing_strings": {
     "level": "error"
@@ -114,7 +114,7 @@
     "level": "ignore"
   },
   "no_unnecessary_fat_arrows": {
-    "level": "warn"
+    "level": "error"
   },
   "non_empty_constructor_needs_parens": {
     "level": "ignore"
