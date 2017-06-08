@@ -9,8 +9,8 @@
   "scripts": {
     "prepublish": "coffee --bare -o lib -c src",
     "pretest": "rm -rf coverage/* && coffeeCoverage --inst istanbul . .",
-    "test": "istanbul cover --print none coffeetape test/*.coffee && coffeelint src/ test/",
-    "posttest": "rm -rf src/*.js test/*.js ; istanbul report text"
+    "test": "trap 'rm -f src/*.js test/*.js' EXIT; istanbul cover --print none coffeetape test/*.coffee",
+    "posttest": "coffeelint src/ test/ && istanbul report text"
   },
   "repository": {
     "type": "git",
@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "coffee-coverage": "^2.0.1",
+    "coffeelint": "^1.16.0",
     "coffeetape": "^1.0.1",
     "istanbul": "^0.4.5",
     "sinon": "^2.2.0"
