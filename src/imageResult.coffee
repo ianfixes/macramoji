@@ -1,61 +1,49 @@
-tmp = require 'tmp'
 fs  = require 'fs'
 gm  = require 'gm'
 
-class ImageContainer
-  constructor: (@path, @cleanupCallback) ->
+ImageContainer = require './imageContainer'
 
+# this is the container for a final emoji result
+# it needs to keep track of any error messages and
+# any intermediate images created along the way.
+# @representing is the string representing this result
 class ImageResult
-  constructor: ->
-    @tempImages    = []
+  constructor: (intermediateImages, errorMessages, resultImage) ->
+    @intermediateImages = []
     @errorMessages = []
-    @resultImage   = null
+    @resultImage = null
+    if intermediateImages != undefined
+      @intermediateImages = @intermediateImages.concat intermediateImages
+    if errorMessages != undefined
+      @errorMessages = @errorMessages.concat errorMessages
+    if resultImage != undefined
+      @resultImage = resultImage
 
+  # call all cleanup functions for images
   cleanup: ->
     i.cleanupCallback() for i in @allTempImages()
 
+  # direct line to the image path of a result
   imgPath: ->
     @resultImage && @resultImage.path
 
+  # whether we have a result
   isValid: ->
     @resultImage?
 
-  addResult: (path, cleanupFn) ->
-    @resultImage = new ImageContainer(path, cleanupFn)
-
-  # callback takes (err, imgContainer)
-  createTempImage: (callback) ->
-    tmp.file { discardDescriptor: true }, (err, path, fd, cleanupCallback) ->
-      if err
-        callback(err)
-      else
-        ret = new ImageContainer(path, cleanupCallback)
-        callback(null, ret)
-
-  # callback takes (err, tmpImagePath)
-  # TODO: it's late and i feel like this is a dumb way to structure
-  #   these callbacks
-  addTempImage: (callback) ->
-    @createTempImage (err, imgContainer) =>
-      return callback(err) if err
-      @tempImages.push imgContainer
-      callback(null, imgContainer.path)
-
-  # callback takes (err, tmpImagePath)
-  addResultImage: (callback) ->
-    @createTempImage (err, imgContainer) =>
-      return callback(err) if err
-      @resultImage = imgContainer
-      callback(null, imgContainer.path)
-
+  addResult: (newResult) ->
+    # any existing result is now sidelined
+    @intermediateImages.push @resultImage if @resultImage?
+    @resultImage = newResult
 
   # means we are disposing of this container and making another one
   allTempImages: ->
     if @resultImage != null
-      @tempImages.concat([@resultImage])
+      @intermediateImages.concat([@resultImage])
     else
-      @tempImages
+      @intermediateImages
 
+  # result image size in bytes
   size: ->
     p = @imgPath()
     p && fs.statSync(p).size
@@ -73,15 +61,7 @@ class ImageResult
       cb(null, if dims.width > dims.height then dims.width else dims.height)
 
   addTempImages: (imageContainers) ->
-    imageContainers.forEach (v) => @tempImages.push(v)
-
-  addErrors: (errorMessages) ->
-    errorMessages.forEach (v) => @errorMessages.push(v)
-
-  supercede: ->
-    ret = new ImageResult()
-    ret.addTempImages(@allTempImages)
-    ret.addErrors(@errorMessages)
-    ret
+    for v in imageContainers
+      @intermediateImages.push(v)
 
 module.exports = ImageResult

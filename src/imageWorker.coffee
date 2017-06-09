@@ -23,95 +23,131 @@ class ImageWorker
         cb()
     ), callback
 
-  errorMessages: () ->
-    if @result? then [] else @result.errorMessages
-
-  tempImages: () ->
-    if @result? then [] else @result.tempImages
-
   # tally up the error messages from all args
-  errorResult: (otherMessages) ->
+  errorResult: (otherMessages, otherImages) ->
     tempImages = []
     errorMessages = []
     for a in @resolvedArgs
-      if a?
-        tempImages = tempImages.concat(a.tempImages)
+      if a? && a instanceof ImageResult
+        tempImages = tempImages.concat(a.allTempImages())
         errorMessages = errorMessages.concat(a.errorMessages)
     errorMessages = errorMessages.concat(otherMessages) if otherMessages
+    tempImages = tempImages.concat(otherImages) if otherImages
 
-    ImageResult.new tempImages, errorMessages, null
-
-  argsValid: () ->
-    @resolvedArgs.every (x) ->
-      (x instanceof ImageResult) && x.isValid()
-
+    new ImageResult tempImages, errorMessages, null
   # try to resolve all the arguments, which should produce ImageResults
   # errors here are async errors of some kind
   checkSubResolve: (cb) ->
-    subResolve (err) =>
+    @subResolve (err) =>
       if (err)
-        cb errorResult("#{@parseDescription} subResolve error: #{err}")
+        cb @errorResult("#{@parseDescription} subResolve error: #{err}")
       else
         cb()
+
+  isValidImageResult: (something) ->
+    (something instanceof ImageResult) && something.isValid()
+
+  argsValid: () ->
+    @resolvedArgs.every (x) =>
+      @isValidImageResult(x)
 
   # check that all resolvedArgs contain images
   # if any args were invalid, bubble up all those error messages
   checkResolvedArgs: (cb) ->
-    if !@argsValid()
-      cb errorResult()
+    problems = []
+
+    @resolvedArgs.forEach (a, i) =>
+      if !(a instanceof ImageResult)
+        problems.push "#{@args[i].parseDescription} didn't resolve to an ImageResult"
+      else if !a.isValid()
+        problems.push "#{@args[i].parseDescription} didn't produce a valid ImageResult"
+
+    if problems.length > 0
+      cb @errorResult(problems)
     else
       cb()
 
+  # normalize to min of max dimension, modifies @resolvedArgs in-place
   # wrapper for normalization
   # callback takes (err)
   normalizeArgs: (dimensions, callback) ->
     dimension = Math.min(dimensions)
-    work = (ir, cb) -> transform.normalize(ir, dimension, cb)
-    async.map @resolvedArgs, work, (err, results) =>
+    normFn = (ir, cb) -> transform.normalize(ir, dimension, cb)
+    async.map @resolvedArgs, normFn, (err, results) =>
       if err
-        errRet = errorResult("#{@parseDescription} normalizeArgs error: #{err}")
+        errRet = @errorResult("'#{@parseDescription}' normalizeArgs error: #{err}")
         return callback(errRet)
       @resolvedArgs = results
       callback()
+
+  # if work fn doesn't call its callback,
+  #   then we're fucked because that's the halting problem
+  # if work fn has an arg problem, it has to report an error
+  #   someone has to annotate that error
+  # if work fn has a GM problem, it has to report an error
+  #   someone has to annotate that error
+  # if work fn returns a result, we have to save that result
+  workFnWrapper: (callback) ->
+
+    # if it gets an error, annotate that error
+    wrappedErrResult = (definitelyErr, maybeResult) =>
+      err = "'#{@parseDescription}' workFn error: #{definitelyErr}"
+      if !maybeResult
+        @errorResult [err]
+      else if !(maybeResult instanceof ImageResult)
+        @errorResult ["#{err} (and result not ImageResult)"]
+      else
+        @errorResult [err], maybeResult.allTempImages()
+
+    @workFn @resolvedArgs, (err, result) =>
+      if !(err || result)
+        return callback(wrappedErrResult("error and result both null", null), null)
+      else if err
+        return callback(wrappedErrResult(err, result), null)
+      else if !(result instanceof ImageResult)
+        return callback(wrappedErrResult("result not ImageResult", null), null)
+      else if !@isValidImageResult(result)
+        return callback(wrappedErrResult("ImageResult not valid", result), null)
+
+      # success; add all intermediate images from args
+      for a in @resolvedArgs
+        result.addTempImages(a.allTempImages()) if a? && a instanceof ImageResult
+
+      callback(null, result)
+
 
   # callback takes imageResult.  only imageresults may be returned.
   resolve: (callback) ->
     return callback(@result) if @result
 
     # find all normalized (max dimension) image sizes
+    # callback returns nothing because we're overwriting in-place
     getNormalDims = (cb) =>
       dimFns = @resolvedArgs.map (x) -> x.normalDimension
       async.parallel dimFns, (err, result) =>
         if err
-          cb errorResult("#{@parseDescription} getNormalDims error: #{err}")
+          cb errorResult("'#{@parseDescription}' getNormalDims error: #{err}")
         else
           cb()
 
     # we're going to use this in an odd way.  the outer function returns only
-    # ImageResults.  So any errors are basically just early exits.
+    # ImageResults.  So any errors here are basically just early exits.
     async.waterfall([
-      @checkSubResolve,
-      @checkResolvedArgs,
-      getNormalDimensions,
-      # normalize to min of max dimension
-      @normalizeArgs,
-
-
-
+      @checkSubResolve,    # make sure args become ImageResults
+      @checkResolvedArgs,  # make sure resolvedArgs contain images
+      getNormalDims,       # get all image dimensions
+      @normalizeArgs,      # resize all images to smallest image size
+      @workFnWrapper,      # run the work function
+      # TODO: this
+      #@checkResultSize,    # make sure result isn't oversized
     ],
       # final result handler: err for early exit, result for success
-      (err, result) ->
+      (err, result) =>
         if err
           @result = err
         else
           @result = result
         callback(@result)
-      # run the @workFn
-      # make sure the result is an ImageResult (dev error)
-      # make sure that the image is not oversized (over limit)
-      # if the work function results in an error,
-      # annotate that with @parseDescription and finish
-      # else, return the result
     )
 
 

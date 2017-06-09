@@ -1,4 +1,7 @@
-# all exports in this file must act on imageResults
+ImageContainer = require './imageContainer'
+
+# all exports in this file must act on an array of imageResults
+# and a callback that takes (err, ImageResult)
 
 # https://coffeescript-cookbook.github.io/chapters/arrays/check-type-is-array
 isArray = (value) ->
@@ -10,7 +13,7 @@ isArray = (value) ->
     not ( value.propertyIsEnumerable 'length' )
 
 # inputGm is an opened GM chain
-# inputResults is an ImageResult
+# inputResult is an ImageResult
 # workFn takes inputGm and returns GM
 # cb takes (err, ImageResult)
 doIO = (inputGm, inputResult, cb, workFn) ->
@@ -18,7 +21,8 @@ doIO = (inputGm, inputResult, cb, workFn) ->
   ret.addResultImage (err, resultPath) ->
     workFn(inputGm)
     .write resultPath, (err2) ->
-      return cb(err) if err2
+      if err2
+        return cb(err)
       cb(null, ret)
 
 # cb takes err, result
