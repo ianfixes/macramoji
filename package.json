@@ -29,11 +29,13 @@
     "coffeelint": "^1.16.0",
     "coffeetape": "^1.0.1",
     "istanbul": "^0.4.5",
-    "sinon": "^2.2.0"
+    "sinon": "^2.2.0",
+    "tape-catch": "^1.0.6"
   },
   "dependencies": {
     "async": "^2.4.1",
     "gm": "^1.23.0",
+    "jison": "https://github.com/zaach/jison.git#7653842e5120510b0b77484ac90d6c569cf146fd",
     "tmp": "0.0.31"
   }
 }

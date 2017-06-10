@@ -20,7 +20,7 @@
 "("          { return '('; }
 ")"          { return ')'; }
 ","\s?       { return ','; }
-[a-z0-9_+-]+ { return 'VAR'; }
+[a-z0-9_+-]+ { return 'LABEL'; }
 <<EOF>>      { return 'EOF'; }
 /lex
 
@@ -61,7 +61,7 @@ emoji
   ;
 
 var
-  : VAR
+  : LABEL
     { $$ = yytext; }
   ;
 

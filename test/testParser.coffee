@@ -36,4 +36,21 @@ test 'parser', (troot) ->
     t.deepEqual(unparser.unparse(parsed), unparsed)
     t.end()
 
+  test "can parse", (t) ->
+    parser.parse(":identity(:favico:):")
+    t.end()
+
+  test "errors when can't parse", (t) ->
+    try
+      parser.parse "xxx"
+    catch e
+      msg = [
+        "Error: Parse error on line 1:"
+        "xxx",
+        "^",
+        "Expecting ':', got 'LABEL'"
+      ].join("\n")
+      t.equal("#{e}", msg)
+      t.end()
+
   troot.end()
