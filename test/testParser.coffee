@@ -6,6 +6,7 @@ parser   = require '../src/parser'
 unparser = require '../src/unparser'
 
 unparsed = ':(dealwithit(:poop:, :kamina-glasses:))splosion:'
+unparsedEnglish = 'dealwithit-poop-kamina-glasses-splosion'
 parsed =
   entity: 'funk'
   name: 'splosion'
@@ -32,10 +33,6 @@ test 'parser', (troot) ->
     t.deepEqual(parser.parse(unparsed), parsed)
     t.end()
 
-  test 'produces proper string', (t) ->
-    t.deepEqual(unparser.unparse(parsed), unparsed)
-    t.end()
-
   test "can parse", (t) ->
     parser.parse(":identity(:favico:):")
     t.end()
@@ -53,4 +50,18 @@ test 'parser', (troot) ->
       t.equal("#{e}", msg)
       t.end()
 
+  troot.end()
+
+test 'unparser', (troot) ->
+  test 'produces proper string for emoji, no double colons', (t) ->
+    t.equal(unparser.unparse(parsed.args[0].args[0]), ":poop:")
+    t.end()
+
+  test 'produces proper string for functions', (t) ->
+    t.equal(unparser.unparse(parsed), unparsed)
+    t.end()
+
+  test "produces english version", (t) ->
+    t.deepEqual(unparser.unparseEnglish(parsed), unparsedEnglish)
+    t.end()
   troot.end()

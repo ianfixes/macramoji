@@ -1,3 +1,9 @@
+http = require 'http'
+fs = require 'fs'
+tmp = require 'tmp'
+ImageResult = require './imageResult'
+ImageContainer = require './imageContainer'
+
 EMOJI_FETCH_INTERVAL_SECONDS = 300
 
 # TODO: generate the "emoji download" action directly in here
@@ -13,23 +19,26 @@ class EmojiStore
   timestamp: ->
     (new Date).getTime()
 
-  nextFetchCountdown: ->
-    min(0, @timestamp - @nextFetchOpportunity)
+  nextFetchCountdown: =>
+    min(0, @timestamp() - @nextFetchOpportunity())
 
-  nextFetchOpportunity: ->
+  nextFetchOpportunity: =>
     @lastFetch + EMOJI_FETCH_INTERVAL_SECONDS * 1000
 
-  canFetchEmojiAgain: ->
+  canFetchEmojiAgain: =>
     @nextFetchCountdown == 0
 
-  fetchEmoji: (callback) ->
+  fetchEmoji: (callback) =>
     # TODO: function that returns an error'd image result
     return unless canFetchEmojiAgain
     # do something with callback
     @lastFetch = @timestamp
     true
 
-  updateStore: (emojiUrls) ->
+  known: () ->
+    Object.keys @store
+
+  updateStore: (emojiUrls) =>
     alias = 'alias:'
     parseUrl = (url) ->
       if url.indexOf(alias) != 0
@@ -45,8 +54,35 @@ class EmojiStore
       else
         @store[name] = emojiUrls[data.alias]
 
-  # preferred external entry point
-  getEmoji: (desired, callback) ->
-    # if all desired emoji
+  download: (url, dest, cb) ->
+    file = fs.createWriteStream(dest)
+    request = http.get(url, (response) ->
+      response.pipe(file)
+      file.on 'finish', () ->
+        file.close(cb);  # close() is async, call cb after close completes.
+    ).on('error', (err) -> # Handle errors
+      # fs.unlink dest  # Delete the file async. (But we don't check the result)
+      cb(err.message) if (cb)
+    )
+
+  # a function for an ImageWorker
+  workFn: (desired) ->
+    url = @store[desired]
+    # onComplete takes an ImageResult
+    return (argsWhichAreImageResults, onComplete) =>
+      ImageContainer.fromNewTempFile (err, ic) =>
+        ret = new ImageResult
+        if (err)
+          ret.addErrors [err]
+          onComplete(ret)
+
+        @download url, ic.path, (err2, result) ->
+          if (err2)
+            ret.addErrors [err2]
+            ic.cleanupCallback()
+            onComplete(ret)
+
+          ret.addResult ic
+          onComplete(ret)
 
 module.exports = EmojiStore

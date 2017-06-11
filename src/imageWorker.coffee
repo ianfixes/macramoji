@@ -37,7 +37,7 @@ class ImageWorker
     new ImageResult tempImages, errorMessages, null
   # try to resolve all the arguments, which should produce ImageResults
   # errors here are async errors of some kind
-  checkSubResolve: (cb) ->
+  checkSubResolve: (cb) =>
     @subResolve (err) =>
       if (err)
         cb @errorResult("#{@parseDescription} subResolve error: #{err}")
@@ -53,7 +53,7 @@ class ImageWorker
 
   # check that all resolvedArgs contain images
   # if any args were invalid, bubble up all those error messages
-  checkResolvedArgs: (cb) ->
+  checkResolvedArgs: (cb) =>
     problems = []
 
     @resolvedArgs.forEach (a, i) =>
@@ -70,7 +70,7 @@ class ImageWorker
   # normalize to min of max dimension, modifies @resolvedArgs in-place
   # wrapper for normalization
   # callback takes (err)
-  normalizeArgs: (dimensions, callback) ->
+  normalizeArgs: (dimensions, callback) =>
     dimension = Math.min(dimensions)
     normFn = (ir, cb) -> transform.normalize(ir, dimension, cb)
     async.map @resolvedArgs, normFn, (err, results) =>
@@ -87,7 +87,7 @@ class ImageWorker
   # if work fn has a GM problem, it has to report an error
   #   someone has to annotate that error
   # if work fn returns a result, we have to save that result
-  workFnWrapper: (callback) ->
+  workFnWrapper: (callback) =>
 
     # if it gets an error, annotate that error
     wrappedErrResult = (definitelyErr, maybeResult) =>
@@ -99,11 +99,9 @@ class ImageWorker
       else
         @errorResult [err], maybeResult.allTempImages()
 
-    @workFn @resolvedArgs, (err, result) =>
-      if !(err || result)
-        return callback(wrappedErrResult("error and result both null", null), null)
-      else if err
-        return callback(wrappedErrResult(err, result), null)
+    @workFn @resolvedArgs, (result) =>
+      if result == null
+        return callback(wrappedErrResult("result is null", null), null)
       else if !(result instanceof ImageResult)
         return callback(wrappedErrResult("result not ImageResult", null), null)
       else if !@isValidImageResult(result)
@@ -126,9 +124,9 @@ class ImageWorker
       dimFns = @resolvedArgs.map (x) -> x.normalDimension
       async.parallel dimFns, (err, result) =>
         if err
-          cb errorResult("'#{@parseDescription}' getNormalDims error: #{err}")
+          cb @errorResult("'#{@parseDescription}' getNormalDims error: #{err}")
         else
-          cb()
+          cb(null, result)
 
     # we're going to use this in an odd way.  the outer function returns only
     # ImageResults.  So any errors here are basically just early exits.

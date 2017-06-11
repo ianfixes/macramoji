@@ -1,6 +1,8 @@
-emojiParser = require './parser'
-unparser    = require './unparser'
-EmojiStore  = require './emojiStore'
+emojiParser   = require './parser'
+unparser      = require './unparser'
+EmojiStore    = require './emojiStore'
+ImageWorker   = require './imageWorker'
+SlackResponse = require './slackResponse'
 
 class Extensimoji
   constructor: (@slackClient, @macros, @onError) ->
@@ -42,28 +44,70 @@ class Extensimoji
   invalidEmojiNames: (entities, definedEmoji) ->
     @invalidAnything entities, 'emoji', definedEmoji
 
+  # get a summary of all name-related problems that might exist
+  entityProblems: (parseTree) ->
+    entities = @reduce parseTree, [], (acc, tree) ->
+      acc.concat([
+        entity: tree.entity
+        name: tree.name
+      ])
+
+    badFunks = @invalidFunkNames(entities)
+    badEmoji = @invalidEmojiNames(entities, @emoji.store)
+
+    msgs = []
+    if badFunks.length > 0
+      msgs.push "Unknown function names: #{badFunks.join(', ')}"
+    if badEmoji.length > 0
+      msgs.push "Unknown emoji names: #{badEmoji.join(', ')}"
+      # TODO: refresh and retry somehow?
+    msgs
+
   # we convert the parse tree to an imageWorker tree
   # don't forget to add the unparsed string as the first arg of imageworker
   # this callback does NOT take an imageworker... TODO what then
-  prepare: (parseTree, callback) ->
-    # if any names are invalid
-    #     private reply:
-    #
+  prepare: (parseTree) ->
+    # turn a parsed tree back into a string, for better error messages
+    prep_helper = (tree) =>
+      unparsed = unparser.unparse(tree)
+      if tree.entity == 'emoji'
+        return new ImageWorker unparsed, [], @emoji.workFn(tree.name)
 
-  # prepare the imageWorker tree
-  # then process it
-  processTree: (parseTree, callback) ->
-    {}
+      args = tree.args.map (x) -> prep_helper(x)
+      return new ImageWorker unparsed, args, @macros[tree.name]
+    prep_helper(parseTree)
 
   # get a message
   # see if its parseable
   # prepare it for processing
   # process it
-  # upload it if things worked
-  # else DM the user to say what went wrong
+  # callback with a slackResponse object
+  process: (emojiStr, onComplete) =>
+    ret = new SlackResponse
+    parseTree = null
+    try
+      parseTree = @parse emojiStr
+    catch err
+      ret.setMessage "I couldn't parse `#{emojiStr}` as macromoji:\n```#{err}```"
+      return onComplete(ret)
+
+    probs = @entityProblems(parseTree)
+    if probs.length > 0
+      probList = (probs.map (x) -> "\n • #{x}").join("")
+      ret.setMessage "I didn't understand some of `#{emojiStr}`:#{probList}"
+      return onComplete(ret)
+
+    workTree = @prepare(parseTree)
+    workTree.resolve (imgResult) ->
+      ret.setUpload(imgResult, unparser.unparseEnglish(parseTree))
+      return onComplete(ret)
+
+  # process a message
+  # respond to user
   # delete the temp files (cleanup)
-  respondToChatMessage: (slackMessageObject) ->
-    {}
+  respondToChatMessage: (emojiStr, slackMessageObject) ->
+    @process emojiStr, (slackResp) ->
+      slackResp.respond(slackMessageObject)
 
   reduce: (parseTree, acc, onEach) ->
     here = onEach(acc, parseTree)

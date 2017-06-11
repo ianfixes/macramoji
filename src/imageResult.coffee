@@ -45,23 +45,31 @@ class ImageResult
 
   # result image size in bytes
   size: ->
-    p = @imgPath()
-    p && fs.statSync(p).size
+    @resultImage && @resultImage.size()
 
   # raw dimensions
   # callback gives (err, {width: x, height: y})
   dimensions: (cb) ->
-    gm(@imgPath()).size cb
+    return cb("Can't get dimensions of null image") unless @resultImage
+    @resultImage.dimensions cb
 
   # whichever dimension is bigger
   # callback gives (err, dimensionInteger)
   normalDimension: (cb) ->
-    @dimensions (err, dims) ->
-      return cb(err) if err
-      cb(null, if dims.width > dims.height then dims.width else dims.height)
+    return cb("Can't get dimensions of null image") unless @resultImage
+    @resultImage.normalDimension cb
 
   addTempImages: (imageContainers) ->
-    for v in imageContainers
-      @intermediateImages.push(v)
+    imageContainers.forEach (v) => @intermediateImages.push(v)
+
+  addErrors: (errorMessages) ->
+    errorMessages.forEach (v) => @errorMessages.push(v)
+
+  supercede: ->
+    ret = new ImageResult()
+    ret.addTempImages(@allTempImages())
+    ret.intermediateImages.push(@resultImage) if @resultImage?
+    ret.addErrors(@errorMessages)
+    ret
 
 module.exports = ImageResult

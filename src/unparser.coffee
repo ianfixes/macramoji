@@ -1,7 +1,7 @@
 # turn a parsed tree back into a string, for better error messages
-unparse_helper = (tree) ->
+unparseHelper = (tree) ->
   return ":#{tree.name}:" if tree.entity == 'emoji'
-  args = tree.args.map (x) -> unparse_helper(x)
+  args = tree.args.map (x) -> unparseHelper(x)
   argStr = args.join(', ')
   switch tree.is
     when 'prefix' then "#{tree.name}(#{argStr})"
@@ -9,7 +9,23 @@ unparse_helper = (tree) ->
     else JSON.stringify tree  # basically give up
 
 unparse = (tree) ->
-  ":#{unparse_helper(tree)}:"
+  ret = "#{unparseHelper(tree)}"
+  if tree.entity == "funk"
+    ":#{ret}:"
+  else
+    ret
+
+# turn a parsed tree back into a string, for better error messages
+unparseEnglish = (tree) ->
+  return "#{tree.name}" if tree.entity == 'emoji'
+  args = tree.args.map (x) -> unparseEnglish(x)
+  argStr = args.join('-')
+  switch tree.is
+    when 'prefix' then "#{tree.name}-#{argStr}"
+    when 'suffix' then "#{argStr}-#{tree.name}"
+    else JSON.stringify tree  # basically give up
+
 
 module.exports =
   unparse: unparse
+  unparseEnglish: unparseEnglish

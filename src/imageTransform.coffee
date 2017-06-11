@@ -18,16 +18,19 @@ isArray = (value) ->
 # cb takes (err, ImageResult)
 doIO = (inputGm, inputResult, cb, workFn) ->
   ret = inputResult.supercede()
-  ret.addResultImage (err, resultPath) ->
+  # ret.addResult
+  ImageContainer.fromNewTempFile (err, imgContainer) ->
     workFn(inputGm)
     .write resultPath, (err2) ->
       if err2
-        return cb(err)
+        ret.addTempImages [imgContainer]
+        return cb(err2, ret)
+      ret.addResult imgContainer
       cb(null, ret)
 
 # cb takes err, result
 normalize = (ir, boxSize, cb) ->
-  doIO gm(ir.imgPath), ir, cb, (inputGm) ->
+  doIO gm(ir.imgPath()), ir, cb, (inputGm) ->
     inputGm.resize(boxSize, boxSize)
 
 
