@@ -1,19 +1,21 @@
-fs          = require 'fs'
-test        = require 'tape'
-ctest       = require 'tape-catch'
-sinon       = require 'sinon'
-Extensimoji = require '../src/'
+fs    = require 'fs'
+test  = require 'tape'
+ctest = require 'tape-catch'
+sinon = require 'sinon'
 
+EmojiProcessor = require '../src/emojiProcessor'
 ImageContainer = require '../src/imageContainer'
-ImageResult = require '../src/imageResult'
-ImageWorker = require '../src/imageWorker'
-EmojiStore  = require '../src/emojiStore'
+ImageResult    = require '../src/imageResult'
+ImageWorker    = require '../src/imageWorker'
+EmojiStore     = require '../src/emojiStore'
 
 input1 = ':(dealwithit(:poop:, :kamina-glasses:))splosion:'
 
-fakeEmojiStore = new EmojiStore
-fakeEmojiStore.store =
-  favico: 'http://tinylittlelife.org/favicon.ico'
+fakeClient =
+  emoji: (cb) ->
+    cb null,
+      favico: 'http://tinylittlelife.org/favicon.ico'
+fakeEmojiStore = new EmojiStore(fakeClient, 0)
 
 fakeMacros =
   identity: (args, onComplete) ->
@@ -24,23 +26,23 @@ fakeMacros =
 
 test 'extensimoji', (troot) ->
   test 'parser exists', (t) ->
-    ee = new Extensimoji({}, undefined)
+    ee = new EmojiProcessor({}, undefined)
     t.ok(ee.parser(), 'parser exists')
     t.end()
 
   test 'parser parses positive input', (t) ->
-    ee = new Extensimoji({}, undefined)
+    ee = new EmojiProcessor({}, undefined)
     t.equal(ee.parseable(input1), true)
     t.end()
 
   test 'does not parse negative input', (t) ->
     onErr = sinon.spy()
-    ee = new Extensimoji({}, undefined)
+    ee = new EmojiProcessor({}, undefined)
     t.equal(ee.parseable(input1 + "crap"), false)
     t.end()
 
   test 'can reduce (tree into array)', (t) ->
-    ee = new Extensimoji({}, undefined)
+    ee = new EmojiProcessor({}, undefined)
     parseTree = ee.parse(input1)
     entities = ee.reduce parseTree, [], (acc, tree) ->
       acc.concat([
@@ -59,7 +61,7 @@ test 'extensimoji', (troot) ->
 
 
   test 'understands positional arguments and initializes proper vars', (t) ->
-    ee = new Extensimoji('foo', 'bar')
+    ee = new EmojiProcessor('foo', 'bar')
     t.equal(ee.emojiStore, 'foo')
     t.equal(ee.macros, 'bar')
     t.end()
@@ -74,7 +76,7 @@ test 'extensimoji', (troot) ->
       { entity: 'funk', name: 'dealwithit' },
     ]
 
-    ee = new Extensimoji('foo', funks, 'baz')
+    ee = new EmojiProcessor('foo', funks, 'baz')
     t.equal(ee.invalidFunkNames(entities).length, 0)
     t.end()
 
@@ -89,7 +91,7 @@ test 'extensimoji', (troot) ->
       { entity: 'funk', name: 'dealwithit' },
     ]
 
-    ee = new Extensimoji('foo', funks, 'baz')
+    ee = new EmojiProcessor('foo', funks, 'baz')
     invalidNames = ee.invalidFunkNames(entities)
     t.equal(invalidNames.length, 1)
     t.equal(invalidNames[0], 'bad')
@@ -105,7 +107,7 @@ test 'extensimoji', (troot) ->
       { entity: 'emoji', name: 'glasses' },
     ]
 
-    ee = new Extensimoji('foo', 'bar', 'baz')
+    ee = new EmojiProcessor('foo', 'bar', 'baz')
     t.equal(ee.invalidEmojiNames(entities, emoji).length, 0)
     t.end()
 
@@ -121,7 +123,7 @@ test 'extensimoji', (troot) ->
       { entity: 'emoji', name: 'bad' },
     ]
 
-    ee = new Extensimoji('foo', 'bar', 'baz')
+    ee = new EmojiProcessor('foo', 'bar', 'baz')
     invalidNames = ee.invalidEmojiNames(entities, emoji)
     t.equal(invalidNames.length, 1)
     t.equal(invalidNames[0], 'bad')
@@ -130,7 +132,7 @@ test 'extensimoji', (troot) ->
   test 'can add good macros', (t) ->
     entities = [{ entity: 'funk', name: 'splosion' }]
 
-    ee = new Extensimoji('foo', {}, 'baz')
+    ee = new EmojiProcessor('foo', {}, 'baz')
     # isn't there before
     invalidNames = ee.invalidFunkNames(entities)
     t.equal(invalidNames.length, 1)
@@ -144,7 +146,7 @@ test 'extensimoji', (troot) ->
   test "can't add bad macros -- macros lacking a function", (t) ->
     entities = [{ entity: 'funk', name: 'splosion' }]
 
-    ee = new Extensimoji('foo', {}, 'baz')
+    ee = new EmojiProcessor('foo', {}, 'baz')
     # isn't there before
     invalidNames = ee.invalidFunkNames(entities)
     t.equal(invalidNames.length, 1)
@@ -156,7 +158,7 @@ test 'extensimoji', (troot) ->
     t.end()
 
   test 'can reduce (tree into array)', (t) ->
-    ee = new Extensimoji({}, undefined, undefined)
+    ee = new EmojiProcessor({}, undefined, undefined)
     parseTree = ee.parse(input1)
     entities = ee.reduce(parseTree, [], (acc, tree) ->
       acc.concat([
@@ -197,7 +199,7 @@ test 'extensimoji', (troot) ->
   # do end-to-end test
   doe2e = (title, input, checkResult) ->
     ctest title, (t) ->
-      ee = new Extensimoji fakeEmojiStore, fakeMacros
+      ee = new EmojiProcessor fakeEmojiStore, fakeMacros
 
       ee.process input, (slackResp) ->
         checkResult(t, slackResp, ee)

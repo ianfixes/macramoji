@@ -1,9 +1,8 @@
 
-test        = require 'tape'
-sinon       = require 'sinon'
-Extensimoji = require '../src/'
+test  = require 'tape'
+sinon = require 'sinon'
 
-ImageResult = require '../src/imageResult'
+ImageResult    = require '../src/imageResult'
 ImageContainer = require '../src/imageContainer'
 
 ic1 = new ImageContainer "foo", () ->

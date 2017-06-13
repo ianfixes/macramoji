@@ -1,15 +1,14 @@
-
 test        = require 'tape'
 sinon       = require 'sinon'
-Extensimoji = require '../src/'
 
 ImageResult = require '../src/imageResult'
 ImageWorker = require '../src/imageWorker'
 EmojiStore  = require '../src/emojiStore'
 
-fakeEmojiStore = new EmojiStore
-fakeEmojiStore.store =
-  favico: 'http://tinylittlelife.org/favicon.ico'
+fakeClient =
+  emoji: (err, result) ->
+    favico: 'http://tinylittlelife.org/favicon.ico'
+fakeEmojiStore = new EmojiStore(fakeClient, 0)
 
 fakeMacros =
   identity: (args, onComplete) ->

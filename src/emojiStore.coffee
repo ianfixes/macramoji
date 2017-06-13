@@ -2,41 +2,33 @@ http = require 'http'
 fs = require 'fs'
 tmp = require 'tmp'
 ImageResult = require './imageResult'
-ImageContainer = require './imageContainer'
-
-EMOJI_FETCH_INTERVAL_SECONDS = 300
-
-# TODO: generate the "emoji download" action directly in here
-# TODO: put the "retry after refetch" logic in here
 
 # We need to get the emoji from Slack via their client.
 # Try to stay up to date, but don't go nuts.
 class EmojiStore
-  constructor: (@slackClient) ->
-    @lastFetch = 0
+  constructor: (@slackClient, fetchIntervalSeconds) ->
     @store = {}
+    @timer = null
+    @fetchEmoji()
+    @setFetchInterval(fetchIntervalSeconds)
 
-  timestamp: ->
-    (new Date).getTime()
+  fetchEmoji: (onComplete) =>
+    @slackClient.emoji (err, result) =>
+      @updateStore(result)
+      onComplete() if onComplete?
 
-  nextFetchCountdown: =>
-    min(0, @timestamp() - @nextFetchOpportunity())
-
-  nextFetchOpportunity: =>
-    @lastFetch + EMOJI_FETCH_INTERVAL_SECONDS * 1000
-
-  canFetchEmojiAgain: =>
-    @nextFetchCountdown == 0
-
-  fetchEmoji: (callback) =>
-    # TODO: function that returns an error'd image result
-    return unless canFetchEmojiAgain
-    # do something with callback
-    @lastFetch = @timestamp
-    true
+  setFetchInterval: (seconds) ->
+    clearInterval(@timer) if @timer?
+    return if seconds == 0
+    return if seconds == undefined
+    return unless seconds?
+    @timer = setInterval fetchEmoji, seconds * 1000
 
   known: () ->
     Object.keys @store
+
+  hasEmoji: (name) ->
+    name of @store
 
   updateStore: (emojiUrls) =>
     alias = 'alias:'
@@ -64,7 +56,6 @@ class EmojiStore
       # fs.unlink dest  # Delete the file async. (But we don't check the result)
       cb(err.message)
     )
-
 
   # a function for an ImageWorker
   workFn: (desired) ->

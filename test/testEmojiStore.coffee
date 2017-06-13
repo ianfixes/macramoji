@@ -1,17 +1,26 @@
-test        = require 'tape'
-sinon       = require 'sinon'
-fs          = require 'fs'
-Extensimoji = require '../src/'
+test  = require 'tape'
+sinon = require 'sinon'
+fs    = require 'fs'
 
 ImageResult = require '../src/imageResult'
 ImageWorker = require '../src/imageWorker'
-EmojiStore = require '../src/emojiStore'
+EmojiStore  = require '../src/emojiStore'
+
+fakeClient =
+  emoji: (cb) ->
+    cb null,
+      favico: 'http://tinylittlelife.org/favicon.ico'
 
 test 'Emoji Store', (troot) ->
+  test 'can initialize emoji store with fake client', (t) ->
+    es = new EmojiStore(fakeClient, 0)
+    t.deepEqual(es.store,
+      favico: 'http://tinylittlelife.org/favicon.ico')
+    t.true(es.hasEmoji("favico"))
+    t.end()
+
   test 'can download, run stats, and cleanup', (t) ->
-    es = new EmojiStore
-    es.store =
-      favico: 'http://tinylittlelife.org/favicon.ico'
+    es = new EmojiStore(fakeClient, 0)
 
     doTheThing = es.workFn("favico")
     doTheThing [], (result) ->
