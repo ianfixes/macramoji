@@ -1,4 +1,5 @@
 gm  = require 'gm'
+fs = require 'fs'
 
 # container class
 # mostly to make unit testing easier

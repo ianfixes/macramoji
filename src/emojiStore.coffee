@@ -1,4 +1,5 @@
 http = require 'http'
+https = require 'https'
 fs = require 'fs'
 tmp = require 'tmp'
 ImageResult = require './imageResult'
@@ -13,8 +14,9 @@ class EmojiStore
     @setFetchInterval(fetchIntervalSeconds)
 
   fetchEmoji: (onComplete) =>
-    @slackClient.emoji (err, result) =>
-      @updateStore(result)
+    @slackClient.emoji.list (err, result) =>
+      console.log "emoji.makeAPICall got #{Object.keys(result.emoji).length} emoji)"
+      @updateStore(result.emoji)
       onComplete() if onComplete?
 
   setFetchInterval: (seconds) ->
@@ -48,7 +50,7 @@ class EmojiStore
 
   download: (url, dest, cb) ->
     file = fs.createWriteStream(dest)
-    request = http.get(url, (response) ->
+    request = https.get(url, (response) ->
       response.pipe(file)
       file.on 'finish', () ->
         file.close(cb);  # close() is async, call cb after close completes.
