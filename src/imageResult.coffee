@@ -19,6 +19,26 @@ class ImageResult
     if resultImage != undefined
       @resultImage = resultImage
 
+  # initFn takes (path, cb) where cb is (err)
+  # onComplete takes (imgResult)
+  @initFromNewTempFile: (initFn, onComplete) ->
+    ret = new ImageResult
+
+    ImageContainer.fromNewTempFile (err, imgContainer) ->
+      if err
+        ret.addErrors [err]
+        return onComplete(ret)
+
+      initFn imgContainer.path, (err2) ->
+        if err2
+          ret.addErrors([err2])
+          ret.addTempImages [imgContainer]
+          return onComplete(ret)
+
+        ret.addResult imgContainer
+        onComplete(ret)
+
+
   # call all cleanup functions for images
   cleanup: ->
     i.cleanupCallback() for i in @allTempImages()
@@ -49,14 +69,14 @@ class ImageResult
 
   # raw dimensions
   # callback gives (err, {width: x, height: y})
-  dimensions: (cb) ->
-    return cb("Can't get dimensions of null image") unless @resultImage
+  dimensions: (cb) =>
+    return cb("Can't get dimensions of null resultImage") unless @isValid()
     @resultImage.dimensions cb
 
   # whichever dimension is bigger
   # callback gives (err, dimensionInteger)
-  normalDimension: (cb) ->
-    return cb("Can't get dimensions of null image") unless @resultImage
+  normalDimension: (cb) =>
+    return cb("Can't get normalDimension of null resultImage") unless @isValid()
     @resultImage.normalDimension cb
 
   addTempImages: (imageContainers) ->
@@ -64,12 +84,5 @@ class ImageResult
 
   addErrors: (errorMessages) ->
     errorMessages.forEach (v) => @errorMessages.push(v)
-
-  supercede: ->
-    ret = new ImageResult()
-    ret.addTempImages(@allTempImages())
-    ret.intermediateImages.push(@resultImage) if @resultImage?
-    ret.addErrors(@errorMessages)
-    ret
 
 module.exports = ImageResult

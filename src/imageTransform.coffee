@@ -1,6 +1,9 @@
-ImageContainer = require './imageContainer'
+gm  = require 'gm'
 
-# all exports in this file must act on an array of imageResults
+ImageContainer = require './imageContainer'
+ImageResult = require './imageResult'
+
+# TODO: all exports in this file must act on an array of paths
 # and a callback that takes (err, ImageResult)
 
 # https://coffeescript-cookbook.github.io/chapters/arrays/check-type-is-array
@@ -13,25 +16,26 @@ isArray = (value) ->
     not ( value.propertyIsEnumerable 'length' )
 
 # inputGm is an opened GM chain
-# inputResult is an ImageResult
 # workFn takes inputGm and returns GM
-# cb takes (err, ImageResult)
-doIO = (inputGm, inputResult, cb, workFn) ->
-  ret = inputResult.supercede()
-  # ret.addResult
-  ImageContainer.fromNewTempFile (err, imgContainer) ->
+# cb takes (ImageResult)
+doIO = (inputGm, workFn, cb, format) ->
+  initFn = (rawPath, cb2) ->
+    path = if format then "#{format}:#{rawPath}" else rawPath
     workFn(inputGm)
-    .write resultPath, (err2) ->
-      if err2
-        ret.addTempImages [imgContainer]
-        return cb(err2, ret)
-      ret.addResult imgContainer
-      cb(null, ret)
+    .write path, cb2
 
+  ImageResult.initFromNewTempFile initFn, cb
+
+# this one is special because other transforms may need it
 # cb takes err, result
-normalize = (ir, boxSize, cb) ->
-  doIO gm(ir.imgPath()), ir, cb, (inputGm) ->
+normalize = (inImageResult, boxSize, cb) ->
+  # path, imageresult, callback, input-graphics-magick
+  workFn = (inputGm) ->
     inputGm.resize(boxSize, boxSize)
+  doIO gm(inImageResult.imgPath()), workFn, (err, outResult) ->
+    if outResult
+      outResult.addTempImages(inImageResult.allTempImages())
+    cb(err, outResult)
 
 
 module.exports =

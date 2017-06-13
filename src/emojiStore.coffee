@@ -62,27 +62,22 @@ class EmojiStore
         file.close(cb);  # close() is async, call cb after close completes.
     ).on('error', (err) -> # Handle errors
       # fs.unlink dest  # Delete the file async. (But we don't check the result)
-      cb(err.message) if (cb)
+      cb(err.message)
     )
+
 
   # a function for an ImageWorker
   workFn: (desired) ->
     url = @store[desired]
+    # callback takes error or null
+    initImageResultByDownloading = (path, callback) =>
+      @download url, path, (err) ->
+        callback(err)
+
     # onComplete takes an ImageResult
-    return (argsWhichAreImageResults, onComplete) =>
-      ImageContainer.fromNewTempFile (err, ic) =>
-        ret = new ImageResult
-        if (err)
-          ret.addErrors [err]
-          onComplete(ret)
+    return (argsWhichArePaths, onComplete) ->
+      ImageResult.initFromNewTempFile initImageResultByDownloading, (result) ->
+        onComplete(result)
 
-        @download url, ic.path, (err2, result) ->
-          if (err2)
-            ret.addErrors [err2]
-            ic.cleanupCallback()
-            onComplete(ret)
-
-          ret.addResult ic
-          onComplete(ret)
 
 module.exports = EmojiStore

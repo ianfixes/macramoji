@@ -4,11 +4,23 @@ ctest       = require 'tape-catch'
 sinon       = require 'sinon'
 Extensimoji = require '../src/'
 
+ImageContainer = require '../src/imageContainer'
 ImageResult = require '../src/imageResult'
 ImageWorker = require '../src/imageWorker'
 EmojiStore  = require '../src/emojiStore'
 
 input1 = ':(dealwithit(:poop:, :kamina-glasses:))splosion:'
+
+fakeEmojiStore = new EmojiStore
+fakeEmojiStore.store =
+  favico: 'http://tinylittlelife.org/favicon.ico'
+
+fakeMacros =
+  identity: (args, onComplete) ->
+    initFn = (path, cb) ->
+      fs.writeFileSync(path, fs.readFileSync(args[0]))
+      cb()
+    ImageResult.initFromNewTempFile initFn, onComplete
 
 test 'extensimoji', (troot) ->
   test 'parser exists', (t) ->
@@ -165,39 +177,38 @@ test 'extensimoji', (troot) ->
     t.end()
 
   verifySize = (t, container) ->
+    t.equal(container.constructor.name, "ImageContainer", "Verify size of ImageContainers only")
     t.true(fs.existsSync(container.path), "the temp image #{container.path} should exist")
     t.equal(container.size(), 43, 'we downloaded what we expected')
 
   verifyFavico = (t, result) ->
-    verifySize(t, result)
+    t.deepEqual(result.errorMessages, [])
+    t.equal(result.constructor.name, "ImageResult", "Verify favicos of ImageResults only")
+    verifySize(t, result.resultImage)
     result.dimensions (err, dims) ->
       t.fail(err, 'getting dimensions succeeds') if err
       t.deepEqual(dims, {height: 1, width: 1})
       result.normalDimension (err, dim) ->
         t.fail(err, 'getting normal dimension succeeds') if err
         t.equal(dim, 1, 'dimension is 1')
-        result.cleanup()
-        t.false(fs.existsSync(result.imgPath()), 'image should be deleted')
+
+  verifyDeletion = (t, result) ->
+    result.cleanup()
+    t.false(fs.existsSync(result.imgPath()), 'image should be deleted')
+
 
   # do end-to-end test
   doe2e = (title, input, checkResult) ->
     ctest title, (t) ->
-      es = new EmojiStore
-      es.store =
-        favico: 'http://tinylittlelife.org/favicon.ico'
-
-      macros =
-        identity: (args, onComplete) ->
-          onComplete null, args[0]
-
-      ee = new Extensimoji null, macros, t.fail
-      ee.emoji = es
+      ee = new Extensimoji null, fakeMacros, t.fail
+      ee.emoji = fakeEmojiStore
 
       ee.process input, (slackResp) ->
-        checkResult(t, slackResp)
+        checkResult(t, slackResp, ee)
+        #verifyDeletion(t, slackResp.imgResult)
         t.end()
 
-  doe2e "Can do an end-to-end test with unparseable str", "zzzzz", (t, slackResp) ->
+  doe2e "Can do an end-to-end test with unparseable str", "zzzzz", (t, slackResp, ee) ->
     t.equal([
       "I couldn't parse `zzzzz` as macromoji:",
       "```Error: Parse error on line 1:",
@@ -206,10 +217,10 @@ test 'extensimoji', (troot) ->
       "Expecting ':', got 'LABEL'```"
     ].join("\n"), slackResp.message)
 
-  doe2e "Can do an end-to-end test with bad funk", ":nope(:favico:):", (t, slackResp) ->
+  doe2e "Can do an end-to-end test with bad funk", ":nope(:favico:):", (t, slackResp, ee) ->
     t.equal("I didn't understand some of `:nope(:favico:):`:\n • Unknown function names: nope",slackResp.message)
 
-  doe2e "Can do an end-to-end test with bad emoji", ":identity(:poop:):", (t, slackResp) ->
+  doe2e "Can do an end-to-end test with bad emoji", ":identity(:poop:):", (t, slackResp, ee) ->
     t.equal("I didn't understand some of `:identity(:poop:):`:\n • Unknown emoji names: poop",slackResp.message)
 
   doe2e "Can do an end-to-end test with bad funk/emoji", ":nope(x(:poop:, :y:)):", (t, slackResp) ->
@@ -218,35 +229,15 @@ test 'extensimoji', (troot) ->
       " • Unknown function names: nope, x",
       " • Unknown emoji names: poop, y"].join("\n"), slackResp.message)
 
-  doe2e "Can do an end-to-end test with good entities", ":identity(:favico:):", (t, slackResp) ->
-    t.equal(null, slackResp.message)
-    t.notEqual(null, slackResp.imgResult)
+  doe2e "Can do an end-to-end test with good entities", ":identity(:favico:):", (t, slackResp, ee) ->
+    t.equal(slackResp.message, null)
+    t.true(slackResp.imgResult)
+    t.equal(slackResp.imgResult.constructor.name, "ImageResult")
     t.equal("identity-favico", slackResp.fileDesc)
-    t.equal(JSON.stringify(slackResp.imgResult), "")
-    result = slackResp.imgResult
-    verifyFavico(t, result)
-    t.end()
-
-  # test "Can do an end-to-end test", (t) ->
-  #   es = new EmojiStore
-  #   es.store =
-  #     favico: 'http://tinylittlelife.org/favicon.ico'
-
-  #   macros =
-  #     identity: (args, onComplete) ->
-  #       onComplete args[0]
-
-  #   slackMessageObject =
-  #     send: () ->
-  #   mock = sinon.mock slackMessageObject # but we still use the original object...
-  #   onErr = sinon.spy()
-
-  #   ee = new Extensimoji null, macros, onErr
-  #   ee.emoji = es
-
-
-  #   ee.respondToChatMessage ":identity(:favico:):", slackMessageObject, () ->
-  #     mock.verify()
-  #     t.end()
+    emojiResult = ee.workTree.resolvedArgs[0]
+    verifyFavico(t, emojiResult)
+    verifyFavico(t, ee.workTree.result)
+    verifyFavico(t, slackResp.imgResult)  # same as prev line
+    t.equal(slackResp.imgResult.allTempImages().length, 2)
 
   troot.end()

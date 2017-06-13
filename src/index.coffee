@@ -97,9 +97,13 @@ class Extensimoji
       ret.setMessage "I didn't understand some of `#{emojiStr}`:#{probList}"
       return onComplete(ret)
 
-    workTree = @prepare(parseTree)
-    workTree.resolve (imgResult) ->
-      ret.setUpload(imgResult, unparser.unparseEnglish(parseTree))
+    @workTree = @prepare(parseTree)
+    @workTree.resolve (imgResult) ->
+      if imgResult.isValid()
+        ret.setUpload(imgResult, unparser.unparseEnglish(parseTree))
+      else
+        probList = (imgResult.errorMessages.map (x) -> "\n • #{x}").join("")
+        ret.setMessage("Processing `#{emojiStr}` produced the following errors: #{probList}")
       return onComplete(ret)
 
   # process a message

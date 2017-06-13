@@ -1,3 +1,5 @@
+gm  = require 'gm'
+
 # container class
 # mostly to make unit testing easier
 class SlackResponse
@@ -21,15 +23,19 @@ class SlackResponse
   upload: (slackResponseObject, filename, label) ->
     robot = slackResponseObject.robot
     # slack API for file.upload
-    contentOpts =
-        #content: fs.readFileSync(tmpPath), # doesn't work with binary
-        file: fs.createReadStream(filename)
-        channels: slackResponseObject.message.room,
-        fileType: 'gif'  # TODO: figure it out
 
-    robot.adapter.client.web.files.upload "#{label}.gif", contentOpts, (fileUploadErr, resp) =>
-      console.log(resp)
-      @imgResult.cleanup()
+    # get upload type and go
+    gm(filename).format (err, fmt) =>
+      format = if err then 'gif' else fmt
+      contentOpts =
+          #content: fs.readFileSync(tmpPath), # doesn't work with binary
+          file: fs.createReadStream(filename)
+          channels: slackResponseObject.message.room,
+          fileType: format # TODO: figure it out
+
+      robot.adapter.client.web.files.upload "#{label}.gif", contentOpts, (fileUploadErr, resp) =>
+        console.log(resp)
+        @imgResult.cleanup()
 
 
 module.exports = SlackResponse

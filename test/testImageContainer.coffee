@@ -3,7 +3,7 @@ sinon = require 'sinon'
 
 ImageContainer = require '../src/imageContainer'
 
-test 'ImageResult', (troot) ->
+test 'ImageContainer', (troot) ->
   test 'initializes its args', (t) ->
     ic1 = new ImageContainer "foo", () ->
       0

@@ -5,12 +5,25 @@ Extensimoji = require '../src/'
 
 ImageResult = require '../src/imageResult'
 ImageWorker = require '../src/imageWorker'
+EmojiStore  = require '../src/emojiStore'
+
+fakeEmojiStore = new EmojiStore
+fakeEmojiStore.store =
+  favico: 'http://tinylittlelife.org/favicon.ico'
+
+fakeMacros =
+  identity: (args, onComplete) ->
+    initFn = (path, cb) ->
+      fs.writeFileSync(path, fs.readFileSync(args[0]))
+      cb()
+    ImageResult.initFromNewTempFile initFn, onComplete
 
 
 # make a fake image worker that "resolves"
 #   by returning the value passed here as an arg
-mkResolver = (val) ->
+mkResolver = (val, label) ->
   ret = {}
+  ret.parseDescription = "mkResolver(#{label})"
   ret.resolve = (cb) ->
     setTimeout (() -> cb(val)),
       Math.floor(Math.random() * 25)
@@ -26,14 +39,14 @@ test 'ImageWorker', (troot) ->
 
   test "creates resolved args on construct", (t) ->
     vals = [8, 6, 7, 5, 3, 0, 9]
-    fakeWorkers = vals.map (x) -> mkResolver(x)
+    fakeWorkers = vals.map mkResolver
     iw = new ImageWorker("", fakeWorkers, {})
     t.equal(iw.resolvedArgs.length, vals.length, 'proper resolvedArgs size')
     t.end()
 
   test 'subResolves args', (t) ->
     vals = [8, 6, 7, 5, 3, 0, 9]
-    fakeWorkers = vals.map (x) -> mkResolver(x)
+    fakeWorkers = vals.map mkResolver
     iw = new ImageWorker("", fakeWorkers, {})
     t.equal(iw.resolvedArgs.length, vals.length, 'proper resolvedArgs size')
     t.deepEqual(iw.resolvedArgs, Array(vals.length).fill(null), 'initally null')
@@ -48,7 +61,7 @@ test 'ImageWorker', (troot) ->
     ir2 = new ImageResult
     ir1.resultImage = ir2.resultImage = "fake"
     vals = [ir1, ir2]
-    fakeWorkers = vals.map (x) -> mkResolver(x)
+    fakeWorkers = vals.map mkResolver
     iw = new ImageWorker("", fakeWorkers, {})
     iw.subResolve (err, result) ->
       t.equal(err, null, 'no error on prepare')
@@ -101,7 +114,7 @@ test 'ImageWorker', (troot) ->
     ir1 = new ImageResult
     ir1.resultImage = "fake"
     vals = [ir1]
-    fakeWorkers = vals.map (x) -> mkResolver(x)
+    fakeWorkers = vals.map mkResolver
     iw = new ImageWorker("", fakeWorkers, {})
     iw.checkSubResolve (err) ->
       t.false(err, 'no error on subresolve')
@@ -112,7 +125,7 @@ test 'ImageWorker', (troot) ->
     ir2 = new ImageResult
     ir1.resultImage = ir2.resultImage = "fake"
     vals = [ir1, ir2]
-    fakeWorkers = vals.map (x) -> mkResolver(x)
+    fakeWorkers = vals.map mkResolver
     iw = new ImageWorker("", fakeWorkers, {})
     iw.resolvedArgs = vals
     iw.checkResolvedArgs (err) ->
@@ -124,11 +137,26 @@ test 'ImageWorker', (troot) ->
     ir2 = {}
     ir1.resultImage = "fake"
     vals = [ir1, ir2]
-    fakeWorkers = vals.map (x) -> mkResolver(x)
+    fakeWorkers = vals.map mkResolver
     iw = new ImageWorker("", fakeWorkers, {})
     iw.resolvedArgs = vals
     iw.checkResolvedArgs (err) ->
       t.true(err instanceof ImageResult)
+      t.deepEqual(err.errorMessages, ["mkResolver(1) didn't resolve to an ImageResult"])
+      t.end()
+
+  test 'checks invalid resolved args', (t) ->
+    ir1 = new ImageResult
+    ir2 = new ImageResult
+    ir1.resultImage = "fake"
+    ir2.resultImage = null
+    vals = [ir1, ir2]
+    fakeWorkers = vals.map mkResolver
+    iw = new ImageWorker("", fakeWorkers, {})
+    iw.resolvedArgs = vals
+    iw.checkResolvedArgs (err) ->
+      t.true(err instanceof ImageResult)
+      t.deepEqual(err.errorMessages, ["mkResolver(1) didn't produce a valid ImageResult"])
       t.end()
 
   doWorkFnTest = (testTitle, sampleResult, doChecks) ->

@@ -40,7 +40,7 @@ class ImageWorker
   checkSubResolve: (cb) =>
     @subResolve (err) =>
       if (err)
-        cb @errorResult("#{@parseDescription} subResolve error: #{err}")
+        cb @errorResult(["#{@parseDescription} subResolve error: #{err}"])
       else
         cb()
 
@@ -72,10 +72,18 @@ class ImageWorker
   # callback takes (err)
   normalizeArgs: (dimensions, callback) =>
     dimension = Math.min(dimensions)
-    normFn = (ir, cb) -> transform.normalize(ir, dimension, cb)
+    # TODO: skip this if all things are already the same size
+
+    # convert inputs and outputs for use with async.map.  transform
+    #   returns an ImageResult in all cases
+    normFn = (inResult, cb) ->
+      transform.normalize inResult, dimension, (outResult) ->
+        return cb(outResult.errorMessages.join("; ")) unless outResult.isValid()
+        cb(null, outResult)
+
     async.map @resolvedArgs, normFn, (err, results) =>
       if err
-        errRet = @errorResult("'#{@parseDescription}' normalizeArgs error: #{err}")
+        errRet = @errorResult(["'#{@parseDescription}' normalizeArgs error: #{err}"])
         return callback(errRet)
       @resolvedArgs = results
       callback()
@@ -99,7 +107,8 @@ class ImageWorker
       else
         @errorResult [err], maybeResult.allTempImages()
 
-    @workFn @resolvedArgs, (result) =>
+    paths = @resolvedArgs.map (x) -> x.imgPath()
+    @workFn paths, (result) =>
       if result == null
         return callback(wrappedErrResult("result is null", null), null)
       else if !(result instanceof ImageResult)
@@ -129,7 +138,7 @@ class ImageWorker
           cb(null, result)
 
     # we're going to use this in an odd way.  the outer function returns only
-    # ImageResults.  So any errors here are basically just early exits.
+    # ImageResults.  So any "errors" here are basically just early exits returning an ImageResult
     async.waterfall([
       @checkSubResolve,    # make sure args become ImageResults
       @checkResolvedArgs,  # make sure resolvedArgs contain images
@@ -143,7 +152,7 @@ class ImageWorker
       (err, result) =>
         if err
           @result = err
-        else
+        else if result
           @result = result
         callback(@result)
     )
