@@ -24,25 +24,23 @@ fakeMacros =
 
 test 'extensimoji', (troot) ->
   test 'parser exists', (t) ->
-    ee = new Extensimoji({}, undefined, undefined)
+    ee = new Extensimoji({}, undefined)
     t.ok(ee.parser(), 'parser exists')
     t.end()
 
   test 'parser parses positive input', (t) ->
-    ee = new Extensimoji({}, undefined, undefined)
+    ee = new Extensimoji({}, undefined)
     t.equal(ee.parseable(input1), true)
     t.end()
 
   test 'does not parse negative input', (t) ->
     onErr = sinon.spy()
-    ee = new Extensimoji({}, undefined, onErr)
+    ee = new Extensimoji({}, undefined)
     t.equal(ee.parseable(input1 + "crap"), false)
-    t.assert(onErr.firstCall.args[0].message.includes("Expecting 'EOF'"),
-      "Error message includes parse info")
     t.end()
 
   test 'can reduce (tree into array)', (t) ->
-    ee = new Extensimoji({}, undefined, undefined)
+    ee = new Extensimoji({}, undefined)
     parseTree = ee.parse(input1)
     entities = ee.reduce parseTree, [], (acc, tree) ->
       acc.concat([
@@ -61,10 +59,9 @@ test 'extensimoji', (troot) ->
 
 
   test 'understands positional arguments and initializes proper vars', (t) ->
-    ee = new Extensimoji('foo', 'bar', 'baz')
+    ee = new Extensimoji('foo', 'bar')
     t.equal(ee.slackClient, 'foo')
     t.equal(ee.macros, 'bar')
-    t.equal(ee.onError, 'baz')
     t.end()
 
   test 'can validate good function entities', (t) ->

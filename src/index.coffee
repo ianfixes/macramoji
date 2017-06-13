@@ -5,7 +5,7 @@ ImageWorker   = require './imageWorker'
 SlackResponse = require './slackResponse'
 
 class Extensimoji
-  constructor: (@slackClient, @macros, @onError) ->
+  constructor: (@slackClient, @macros) ->
     @emoji = EmojiStore(@slackClient)
 
   parser: ->
@@ -19,7 +19,6 @@ class Extensimoji
       @parse str
       true
     catch e
-      @onError(e)
       false
 
   addMacro: (name, fn) ->
