@@ -1,12 +1,11 @@
 emojiParser   = require './parser'
 unparser      = require './unparser'
-EmojiStore    = require './emojiStore'
 ImageWorker   = require './imageWorker'
 SlackResponse = require './slackResponse'
 
 class Extensimoji
-  constructor: (@slackClient, @macros) ->
-    @emoji = EmojiStore(@slackClient)
+  # emoji is an EmojiStore
+  constructor: (@emojiStore, @macros) ->
 
   parser: ->
     emojiParser
@@ -52,7 +51,7 @@ class Extensimoji
       ])
 
     badFunks = @invalidFunkNames(entities)
-    badEmoji = @invalidEmojiNames(entities, @emoji.store)
+    badEmoji = @invalidEmojiNames(entities, @emojiStore.store)
 
     msgs = []
     if badFunks.length > 0
@@ -70,7 +69,7 @@ class Extensimoji
     prep_helper = (tree) =>
       unparsed = unparser.unparse(tree)
       if tree.entity == 'emoji'
-        return new ImageWorker unparsed, [], @emoji.workFn(tree.name)
+        return new ImageWorker unparsed, [], @emojiStore.workFn(tree.name)
 
       args = tree.args.map (x) -> prep_helper(x)
       return new ImageWorker unparsed, args, @macros[tree.name]

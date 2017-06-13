@@ -60,7 +60,7 @@ test 'extensimoji', (troot) ->
 
   test 'understands positional arguments and initializes proper vars', (t) ->
     ee = new Extensimoji('foo', 'bar')
-    t.equal(ee.slackClient, 'foo')
+    t.equal(ee.emojiStore, 'foo')
     t.equal(ee.macros, 'bar')
     t.end()
 
@@ -197,8 +197,7 @@ test 'extensimoji', (troot) ->
   # do end-to-end test
   doe2e = (title, input, checkResult) ->
     ctest title, (t) ->
-      ee = new Extensimoji null, fakeMacros, t.fail
-      ee.emoji = fakeEmojiStore
+      ee = new Extensimoji fakeEmojiStore, fakeMacros
 
       ee.process input, (slackResp) ->
         checkResult(t, slackResp, ee)
