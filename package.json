@@ -1,10 +1,10 @@
 {
-  "name": "extensimoji",
+  "name": "macramoji",
   "description": "A Slack-centric macro language for altering emoji",
   "version": "0.1.0",
   "license": "Apache-2.0",
   "author": "Ian Katz <ianfixes@gmail.com>",
-  "homepage": "https://github.com/ifreecarve/extensimoji#readme",
+  "homepage": "https://github.com/ifreecarve/macramoji#readme",
   "main": "lib",
   "scripts": {
     "prepublish": "coffee --bare -o lib -c src",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ifreecarve/extensimoji.git"
+    "url": "git+https://github.com/ifreecarve/macramoji.git"
   },
   "keywords": [
     "emoji",
@@ -23,7 +23,7 @@
     "slack"
   ],
   "bugs": {
-    "url": "https://github.com/ifreecarve/extensimoji/issues"
+    "url": "https://github.com/ifreecarve/macramoji/issues"
   },
   "devDependencies": {
     "coffee-coverage": "^2.0.1",

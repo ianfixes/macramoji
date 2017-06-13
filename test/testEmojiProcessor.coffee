@@ -24,7 +24,7 @@ fakeMacros =
       cb()
     ImageResult.initFromNewTempFile initFn, onComplete
 
-test 'extensimoji', (troot) ->
+test 'EmojiProcessor', (troot) ->
   test 'parser exists', (t) ->
     ee = new EmojiProcessor({}, undefined)
     t.ok(ee.parser(), 'parser exists')

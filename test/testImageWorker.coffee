@@ -200,4 +200,3 @@ test 'ImageWorker', (troot) ->
     t.deepEqual(result.errorMessages, [])
 
   troot.end()
-

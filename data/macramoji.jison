@@ -1,5 +1,5 @@
 /*
-  extensimoji
+  macramoji
 
   Emoji functional macro language.
 
@@ -29,7 +29,7 @@
 
 %%
 
-extensimoji
+macramoji
   : ':' emojifunk ':' EOF
     { return $emojifunk; }
   ;
