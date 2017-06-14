@@ -71,7 +71,7 @@ class ImageWorker
   # wrapper for normalization
   # callback takes (err)
   normalizeArgs: (dimensions, callback) =>
-    dimension = Math.min(dimensions)
+    dimension = Math.min.apply(null, dimensions)
     # TODO: skip this if all things are already the same size
 
     # convert inputs and outputs for use with async.map.  transform
