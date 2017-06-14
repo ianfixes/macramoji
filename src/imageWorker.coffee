@@ -114,7 +114,10 @@ class ImageWorker
       else if !(result instanceof ImageResult)
         return callback(wrappedErrResult("result not ImageResult", null), null)
       else if !@isValidImageResult(result)
-        return callback(wrappedErrResult("ImageResult not valid", result), null)
+        if result.errorMessages.length == 0
+          return callback(wrappedErrResult("ImageResult not valid", result), null)
+        else
+          return callback(wrappedErrResult("ImageResult has errors: #{result.errorMessages.join('; ')}", result), null)
 
       # success; add all intermediate images from args
       for a in @resolvedArgs
