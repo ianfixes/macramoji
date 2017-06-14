@@ -10,7 +10,10 @@ resultFromGM = (inputGm, workFn, cb, format) ->
     path = if format then "#{format}:#{rawPath}" else rawPath
     tempGm = workFn(inputGm)
     console.log("GM command: #{tempGm.args()}")
-    tempGm.write path, cb2
+    tempGm.write path, (err, result) ->
+      console.log "resultFromGM err: #{err}" if err
+      cb2(err, result)
+
 
   ImageResult.initFromNewTempFile initFn, cb
 
@@ -19,7 +22,7 @@ resultFromGM = (inputGm, workFn, cb, format) ->
 normalize = (inImageResult, boxSize, cb) ->
   # path, imageresult, callback, input-graphics-magick
   workFn = (inputGm) ->
-    inputGm.resize(boxSize, boxSize)
+    inputGm.in("-resize", "#{boxSize}x#{boxSize}")
   resultFromGM gm(inImageResult.imgPath()), workFn, (err, outResult) ->
     if outResult
       outResult.addTempImages(inImageResult.allTempImages())
