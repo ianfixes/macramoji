@@ -1,4 +1,6 @@
 # Macramoji
+[![npm version](https://badge.fury.io/js/macramoji.svg)](https://badge.fury.io/js/macramoji)
+
 A slack-centric programming language for altering emoji
 
 # How it works
