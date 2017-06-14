@@ -1,20 +1,19 @@
 # Macramoji
 A slack-centric programming language for altering emoji
 
-# Example
+# Reference Implementation: Hubot script
 
 ```coffee
 macramoji = require 'macramoji'
-
 refreshSeconds = 15 * 60 # refesh emoji list every 15 minutes
-@emojiStore = new macramoji.EmojiStore(@hubotRobot.adapter.client.web, refreshSeconds)
+module.exports = (robot) ->
+  emojiStore = new macramoji.EmojiStore(robot.adapter.client.web, refreshSeconds)
+  processor = new macramoji.EmojiProcessor(emojiStore, macramoji.defaultMacros)
 
-@processor = new macramoji.EmojiProcessor(@emojiStore, macramoji.defaultMacros)
-
-@hubotRobot.respond /go go emoji macro (.*)/i, (res) ->
-  emojiStr = res.match[1].trim()
-  @processor.process emojiStr, (slackResp) ->
-    slackResp.respond(res)
+  robot.respond /emojify (.*)/i, (res) ->
+    emojiStr = res.match[1].trim()
+    processor.process emojiStr, (slackResp) ->
+      slackResp.respond(res)
 ```
 
 # TODO
