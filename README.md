@@ -1,7 +1,22 @@
 # Macramoji
 A slack-centric programming language for altering emoji
 
+# How it works
+
+Macramoji parses a simple functional programming language for emoji, where function names can either precede or follow the parenthesis and colons denote emoji names (as well as the entire function call itself).  For example:
+
+```
+:(dealwithit(:rage1:, :kamina-glasses:))splosion:
+```
+
+This produces the following gif (assuming you have kamina-glasses):
+
+![dealwithit-rage1-kamina-glasses-splosion](doc/dealwithit-rage1-kamina-glasses-splosion.gif)
+
+
 # Reference Implementation: Hubot script
+
+This script allows you to message a hubot instance with the command `emojify :(dealwithit(:rage1:, :kamina-glasses:))splosion:`
 
 ```coffee
 macramoji = require 'macramoji'
