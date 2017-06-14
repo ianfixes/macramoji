@@ -28,25 +28,33 @@ identity_gm = (paths, cb) ->
 # Make an explosion
 splosion = (paths, cb) ->
   explode = path.join(__dirname, '..', 'data', 'img', 'explosion.gif')
-  workFn = (inputGm) ->
-    # gm has functions for all of these, and it applies them in a different order
-    # which is incorrect and honestly kind of infuriating.  so we manually work around.
-    [
-      ["-dispose", "Previous"],
-      [paths[0]],
-      ["-resize", "128x128"],
-      ["-background", "transparent"],
-      ["-gravity", "center"],
-      ["-extent", "128x128"],
-      ["-set", "page", "+0+0"],
-      ["-set", "delay", "100"],
-      [explode],
-      ["-loop", "0"],
-    ].reduce ((acc, elem) -> acc.in.apply(acc, elem)), inputGm
 
+  imageMagick(paths[0]).identify (err, result) ->
+    # this is my best guess at how to detect animation with GM
+    isAnimated = err == null \
+      && result.Delay != undefined \
+      && result.Delay.length != undefined \
+      && result.Delay.length > 1
 
+    maybeDelay = if isAnimated then [] else ["-set", "delay", "100"]
 
-  imageTransform.resultFromGM imageMagick(), workFn, cb, "gif"
+    workFn = (inputGm) ->
+      # gm has functions for all of these, and it applies them in a different order
+      # which is incorrect and honestly kind of infuriating.  so we manually work around.
+      [
+        ["-dispose", "Previous"],
+        [paths[0]],
+        ["-resize", "128x128"],
+        ["-background", "transparent"],
+        ["-gravity", "center"],
+        ["-extent", "128x128"],
+        ["-set", "page", "+0+0"],
+        maybeDelay,
+        [explode],
+        ["-loop", "0"],
+      ].reduce ((acc, elem) -> acc.in.apply(acc, elem)), inputGm
+
+    imageTransform.resultFromGM imageMagick(), workFn, cb, "gif"
 
 
 
