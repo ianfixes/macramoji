@@ -60,3 +60,6 @@ typings/
 # coffeescript output
 lib/
 coverage-lib/
+
+# mac stuff
+**/.DS_Store
