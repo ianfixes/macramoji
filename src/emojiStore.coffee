@@ -1,7 +1,9 @@
-http = require 'http'
-https = require 'https'
 fs = require 'fs'
 tmp = require 'tmp'
+http = require 'http'
+https = require 'https'
+urllib = require 'url'
+
 ImageResult = require './imageResult'
 
 # We need to get the emoji from Slack via their client.
@@ -15,7 +17,7 @@ class EmojiStore
 
   fetchEmoji: (onComplete) =>
     @slackClient.emoji.list (err, result) =>
-      console.log "emoji.makeAPICall got #{Object.keys(result.emoji).length} emoji)"
+      console.log "emoji.list got #{Object.keys(result.emoji).length} emoji)"
       @updateStore(result.emoji)
       onComplete() if onComplete?
 
@@ -34,7 +36,7 @@ class EmojiStore
 
   updateStore: (emojiUrls) =>
     alias = 'alias:'
-    parseUrl = (url) ->
+    handleUrl = (url) ->
       if url.indexOf(alias) != 0
         {url: url}
       else
@@ -42,15 +44,16 @@ class EmojiStore
 
     @store = {}
     for name, url of emojiUrls
-      data = parseUrl(url)
+      data = handleUrl(url)
       if "url" of data
         @store[name] = data.url
       else
         @store[name] = emojiUrls[data.alias]
 
-  download: (url, dest, cb) ->
+  download: (srcUrl, dest, cb) ->
     file = fs.createWriteStream(dest)
-    request = https.get(url, (response) ->
+    ht = if urllib.parse(srcUrl).protocol == "https:" then https else http
+    request = ht.get(srcUrl, (response) ->
       response.pipe(file)
       file.on 'finish', () ->
         file.close(cb);  # close() is async, call cb after close completes.
