@@ -8,8 +8,9 @@ ImageResult = require './imageResult'
 resultFromGM = (inputGm, workFn, cb, format) ->
   initFn = (rawPath, cb2) ->
     path = if format then "#{format}:#{rawPath}" else rawPath
-    workFn(inputGm)
-    .write path, cb2
+    tempGm = workFn(inputGm)
+    console.log("GM command: #{tempGm.args()}")
+    tempGm.write path, cb2
 
   ImageResult.initFromNewTempFile initFn, cb
 
