@@ -12,9 +12,11 @@ EmojiStore     = require '../src/emojiStore'
 input1 = ':(dealwithit(:poop:, :kamina-glasses:))splosion:'
 
 fakeClient =
-  emoji: (cb) ->
-    cb null,
-      favico: 'http://tinylittlelife.org/favicon.ico'
+  emoji:
+    list: (cb) ->
+      cb null,
+        emoji:
+          favico: 'http://tinylittlelife.org/favicon.ico'
 fakeEmojiStore = new EmojiStore(fakeClient, 0)
 
 fakeMacros =

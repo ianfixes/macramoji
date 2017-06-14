@@ -7,9 +7,11 @@ ImageWorker = require '../src/imageWorker'
 EmojiStore  = require '../src/emojiStore'
 
 fakeClient =
-  emoji: (cb) ->
-    cb null,
-      favico: 'http://tinylittlelife.org/favicon.ico'
+  emoji:
+    list: (cb) ->
+      cb null,
+        emoji:
+          favico: 'http://tinylittlelife.org/favicon.ico'
 
 test 'Emoji Store', (troot) ->
   test 'can initialize emoji store with fake client', (t) ->

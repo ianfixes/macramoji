@@ -6,8 +6,11 @@ ImageWorker = require '../src/imageWorker'
 EmojiStore  = require '../src/emojiStore'
 
 fakeClient =
-  emoji: (err, result) ->
-    favico: 'http://tinylittlelife.org/favicon.ico'
+  emoji:
+    list: (cb) ->
+      cb null,
+        emoji:
+          favico: 'http://tinylittlelife.org/favicon.ico'
 fakeEmojiStore = new EmojiStore(fakeClient, 0)
 
 fakeMacros =
