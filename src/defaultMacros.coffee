@@ -80,7 +80,8 @@ dealwithit = (paths, cb) ->
 
       outputGm = inputGm.in("-dispose", "Previous").in("-delay", "200").in(ff)
       outputGm = midframes.reduceRight appendFrame, outputGm.in("-delay", "8")
-      outputGm = outputGm.in("-dispose", "Previous").in("-delay", "200").in(fl)
+      outputGm = outputGm.in("-dispose", "Previous").in("-delay", "300").in(fl)
+      outputGm = outputGm.in("-loop", "0")
       console.log("onFramesAvailable: #{outputGm.args()}") if debug
       outputGm
 
