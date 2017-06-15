@@ -29,8 +29,6 @@ identity_gm = (paths, cb) ->
   imageTransform.resultFromGM gm(paths[0]), workFn, cb, "gif"
 
 # Make an explosion
-# test case 1: a static image delays for 100ms before exploding
-# test case 2: a gif explodes after its normal animation
 splosion = (paths, cb) ->
   explode = path.join(__dirname, '..', 'data', 'img', 'explosion.gif')
 
@@ -38,7 +36,7 @@ splosion = (paths, cb) ->
     # this is my best guess at how to detect animation with GM
     isAnimated = err == null \
       && result.Delay != undefined \
-      && result.Delay.length != undefined \
+      && Array.isArray(result.Delay) \
       && result.Delay.length > 1
 
     maybeDelay = if isAnimated then [] else ["-set", "delay", "100"]
@@ -62,8 +60,6 @@ splosion = (paths, cb) ->
     imageTransform.resultFromGM imageMagick(), workFn, cb, "gif"
 
 # Make glasses fall from the sky
-# test case 1: works with a static image
-# TODO: test case when input is a gif
 dealwithit = (paths, cb) ->
   glasses = paths[1] || path.join(__dirname, '..', 'data', 'img', 'dealwithit_glasses.png')
   frames = []
@@ -78,9 +74,9 @@ dealwithit = (paths, cb) ->
       appendFrame = (acc, elem) ->
         acc.in.apply(acc, [elem.path])
 
-      outputGm = inputGm.in("-dispose", "Previous").in("-delay", "200").in(ff)
+      outputGm = inputGm.in("-dispose", "Previous").in("-delay", "100").in(ff)
       outputGm = midframes.reduceRight appendFrame, outputGm.in("-delay", "8")
-      outputGm = outputGm.in("-dispose", "Previous").in("-delay", "300").in(fl)
+      outputGm = outputGm.in("-dispose", "Previous").in("-delay", "200").in(fl)
       outputGm = outputGm.in("-loop", "0")
       console.log("onFramesAvailable: #{outputGm.args()}") if debug
       outputGm
@@ -133,12 +129,7 @@ dealwithit = (paths, cb) ->
           console.log("GM err #{err}") if err && debug
           callback(err, result)
 
-
     async.during notTooHigh, generateFrame, onFramesAvailable
-
-
-
-
 
 
 module.exports =
