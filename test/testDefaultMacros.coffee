@@ -45,17 +45,25 @@ test "defaultMacros", (troot) ->
       createArtifact(result.imgPath(), 'dealtwithit_kamina_glasses_resized.gif')
       t.end()
 
+  test "Explosion from static image", (t) ->
+    defaultMacros.splosion [rage1], (result) ->
+      createArtifact(result.imgPath(), 'static_splosion.gif')
+      t.end()
+
+  test "Explosion from static image", (t) ->
+    defaultMacros.dealwithit [rage1, kamina], (result1) ->
+      defaultMacros.splosion [result1.imgPath()], (result) ->
+        createArtifact(result.imgPath(), 'animation_splosion.gif')
+        t.end()
+
   test "creates report", (t) ->
     artifactRows = artifacts.map (a) -> "<tr><td><img src='#{a.path}'></td><td>#{a.name}</td></tr>"
-    artifactTable = [
-      "<table border='1'>",
-      artifactRows.join("\n"),
-      "</table>"
-    ].join("\n")
 
     content = [
       "<html><head><title>Artifacts</title></head><body>",
-      artifactTable,
+      "<table border='1'>",
+      artifactRows.join("\n"),
+      "</table>",
       "</body></html>"].join("\n")
     fs.writeFileSync(outPath("index.html"), content)
     t.end()
