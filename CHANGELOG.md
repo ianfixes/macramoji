@@ -6,19 +6,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- `skintone_x` modifiers where `1 <= x <= 6`
 
 ### Changed
-- test report now shows transparency
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Typos in CONTRIBUTING.md
 
 ### Security
+
+
+## 0.1.2 - 2017-06-16
+### Added
+- `skintone_x` modifiers where `1 <= x <= 6`
+
+### Changed
+- test report now shows transparency
+
+### Fixed
+- Typos in CONTRIBUTING.md
 
 
 ## 0.1.1 - 2017-06-16
@@ -37,5 +45,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - The entire initial release, enabling `splosion` and `dealwithit` macros.
 - 2 debug macros `identity` and `identity-gm`
 
-[Unreleased]: https://github.com/ifreecarve/macramoji/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/ifreecarve/macramoji/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/ifreecarve/macramoji/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/ifreecarve/macramoji/compare/v0.1.0...v0.1.1
