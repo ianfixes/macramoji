@@ -159,7 +159,19 @@ intensifies = (paths, cb) ->
 
     imageTransform.resultFromGM imageMagick(), workFn, cb, "gif"
 
+# alter image color
+alterColor = (paths, color, cb) ->
+  workFn = (inputGm) ->
+    # gm has functions for all of these, and it applies them in a different order
+    # which is incorrect and honestly kind of infuriating.  so we manually work around.
+    [
+      ["-colorspace", "gray"],
+      ["-sigmoidal-contrast", "10,60%"],
+      ["-fill", color],
+      ["-colorize", "65%"],
+    ].reduce ((acc, elem) -> acc.in.apply(acc, elem)), inputGm
 
+  imageTransform.resultFromGM imageMagick(paths[0]), workFn, cb, "png"
 
 module.exports =
   identity: identity
@@ -167,3 +179,9 @@ module.exports =
   splosion: splosion
   dealwithit: dealwithit
   intensifies: intensifies
+  skintone_1: (paths, cb) -> alterColor paths, "rgb(255,255,255)", cb
+  skintone_2: (paths, cb) -> alterColor paths, "rgb(248,220,186)", cb
+  skintone_3: (paths, cb) -> alterColor paths, "rgb(223,188,147)", cb
+  skintone_4: (paths, cb) -> alterColor paths, "rgb(189,143,100)", cb
+  skintone_5: (paths, cb) -> alterColor paths, "rgb(152,100,56)", cb
+  skintone_6: (paths, cb) -> alterColor paths, "rgb(88,69,56)", cb
