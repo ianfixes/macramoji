@@ -1,6 +1,6 @@
-# Contributing to the NMEAPlus gem
+# Contributing to the Macramoji NPM package
 
-NMEAPlus uses a very standard GitHub workflow.
+Macramoji uses a very standard GitHub workflow.
 
 1. Fork the repository on github
 2. Make your desired changes
@@ -22,11 +22,12 @@ A very trivial parser extracts the emoji and macro names, creating a tree of wor
 
 ## Packaging for npm
 
-* Merge pull request with new features
+* Commit all desired changes
 * Bump the version in `package.json`
 * Update the sections of `CHANGELOG.md`
 * `git add package.json CHANGELOG.md`
 * `git commit -m "vVERSION bump"`
+* Open & merge pull request with new features, keeping version bump commit on top
 * `git tag -a vVERSION -m "Released version VERSION"`
 * `npm publish`
 * `git push upstream`
