@@ -132,9 +132,38 @@ dealwithit = (paths, cb) ->
 
     async.during notTooHigh, generateFrame, onFramesAvailable
 
+# shake an image
+intensifies = (paths, cb) ->
+
+  # start with the size -- used to calc speed and offset
+  gm(paths[0]).size (err, size) ->
+    # TODO: something with err
+    maxDim = if size.width > size.height then size.width else size.height
+    md = "#{maxDim}x#{maxDim}"
+    w = size.width
+    h = size.height
+    ww = w * 2
+    hh = h * 2
+
+    workFn = (inputGm) ->
+      # gm has functions for all of these, and it applies them in a different order
+      # which is incorrect and honestly kind of infuriating.  so we manually work around.
+      [
+        ["-dispose", "Previous"],
+        ["-delay", "3"],
+        [paths[0], "-resize", "64x64"],
+        ["\(", "+clone", "-repage", "+1+1", "\)"],
+        ["\(", "+clone", "-repage", "+0+1", "\)"],
+        ["-loop", "0"],
+      ].reduce ((acc, elem) -> acc.in.apply(acc, elem)), inputGm
+
+    imageTransform.resultFromGM imageMagick(), workFn, cb, "gif"
+
+
 
 module.exports =
   identity: identity
   identity_gm: identity_gm
   splosion: splosion
   dealwithit: dealwithit
+  intensifies: intensifies

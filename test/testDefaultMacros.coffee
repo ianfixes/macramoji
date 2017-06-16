@@ -67,6 +67,16 @@ test "defaultMacros", (troot) ->
         createArtifact(result.imgPath(), 'animation_splosion.gif')
         t.end()
 
+  test "intensifies from big image", (t) ->
+    defaultMacros.intensifies [rage1], (result) ->
+      createArtifact(result.imgPath(), 'intensifies_big.gif')
+      t.end()
+
+  test "intensifies from smaller image", (t) ->
+    defaultMacros.intensifies [rage1_id], (result) ->
+      createArtifact(result.imgPath(), 'intensifies_small.gif')
+      t.end()
+
   test "creates report", (t) ->
     artifactRows = artifacts.map (a) -> "<tr><td><img src='#{a.path}'></td><td>#{a.name}</td></tr>"
 
