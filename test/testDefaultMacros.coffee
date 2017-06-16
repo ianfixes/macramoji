@@ -9,6 +9,7 @@ defaultMacros = require '../src/defaultMacros'
 inPath  = (name) -> path.join(__dirname, 'img', name)
 outPath = (name) -> path.join(__dirname, 'artifacts', name)
 fileNoExt = (name) -> path.basename name, path.extname(name)
+poop     = inPath 'dancingpoop.png'
 bob      = inPath 'bob.png'
 muscle   = inPath 'muscle-right.png'
 rage1    = inPath 'rage1.gif'
@@ -26,6 +27,16 @@ test "defaultMacros", (troot) ->
     artifacts.push
       name: fileNoExt(filename)
       path: filename
+
+  test "identity", (t) ->
+    defaultMacros.identity [poop], (result) ->
+      createArtifact(result.imgPath(), 'identity.gif')
+      t.end()
+
+  test "gm-identity", (t) ->
+    defaultMacros.identity_gm [poop], (result) ->
+      createArtifact(result.imgPath(), 'gm_identity.gif')
+      t.end()
 
   test "dealwithit single arg", (t) ->
     defaultMacros.dealwithit [rage1], (result) ->
