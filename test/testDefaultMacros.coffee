@@ -10,6 +10,7 @@ inPath  = (name) -> path.join(__dirname, 'img', name)
 outPath = (name) -> path.join(__dirname, 'artifacts', name)
 fileNoExt = (name) -> path.basename name, path.extname(name)
 bob      = inPath 'bob.png'
+muscle   = inPath 'muscle-right.png'
 rage1    = inPath 'rage1.gif'
 rage1_id = inPath 'identity-rage1.gif'
 kamina   = inPath 'kamina_glasses.png'
@@ -76,6 +77,13 @@ test "defaultMacros", (troot) ->
     defaultMacros.intensifies [rage1_id], (result) ->
       createArtifact(result.imgPath(), 'intensifies_small.gif')
       t.end()
+
+  for num in [1..6]
+    do (num) ->
+      test "fitzpatrick skintone #{num}", (t) ->
+        defaultMacros["skintone_#{num}"] [muscle], (result) ->
+          createArtifact(result.imgPath(), "skintone_#{num}.gif")
+          t.end()
 
   test "creates report", (t) ->
     style = "style='background-color:grey;'"

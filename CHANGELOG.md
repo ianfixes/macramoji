@@ -6,8 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- `skintone_x` modifiers where `1 <= x <= 6`
 
 ### Changed
+- test report now shows transparency
 
 ### Deprecated
 
