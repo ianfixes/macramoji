@@ -9,6 +9,7 @@ defaultMacros = require '../src/defaultMacros'
 inPath  = (name) -> path.join(__dirname, 'img', name)
 outPath = (name) -> path.join(__dirname, 'artifacts', name)
 fileNoExt = (name) -> path.basename name, path.extname(name)
+bob      = inPath 'bob.png'
 rage1    = inPath 'rage1.gif'
 rage1_id = inPath 'identity-rage1.gif'
 kamina   = inPath 'kamina_glasses.png'
@@ -30,6 +31,11 @@ test "defaultMacros", (troot) ->
       createArtifact(result.imgPath(), 'dealwithit_default_glasses.gif')
       t.end()
 
+  test "dealwithit single arg no alpha channel", (t) ->
+    defaultMacros.dealwithit [bob], (result) ->
+      createArtifact(result.imgPath(), 'dealwithit_noalpha_default_glasses.gif')
+      t.end()
+
   test "dealwithit single arg glasses too big", (t) ->
     defaultMacros.dealwithit [rage1_id], (result) ->
       createArtifact(result.imgPath(), 'dealtwithit_default_glasses_resized.gif')
@@ -48,6 +54,11 @@ test "defaultMacros", (troot) ->
   test "Explosion from static image", (t) ->
     defaultMacros.splosion [rage1], (result) ->
       createArtifact(result.imgPath(), 'static_splosion.gif')
+      t.end()
+
+  test "Explosion from static image no alpha", (t) ->
+    defaultMacros.splosion [bob], (result) ->
+      createArtifact(result.imgPath(), 'static_noalpha_splosion.gif')
       t.end()
 
   test "Explosion from static image", (t) ->

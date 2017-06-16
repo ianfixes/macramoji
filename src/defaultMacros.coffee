@@ -115,6 +115,7 @@ dealwithit = (paths, cb) ->
         frames.push(imgContainer)
 
         temp = [
+          ["-alpha", "on"],
           ["-size", "#{maxDim}x#{maxDim}"],
           ["-background", "none"],
           ["-page", "+0+0", paths[0]],
