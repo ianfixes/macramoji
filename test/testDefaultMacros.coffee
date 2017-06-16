@@ -78,7 +78,8 @@ test "defaultMacros", (troot) ->
       t.end()
 
   test "creates report", (t) ->
-    artifactRows = artifacts.map (a) -> "<tr><td><img src='#{a.path}'></td><td>#{a.name}</td></tr>"
+    style = "style='background-color:grey;'"
+    artifactRows = artifacts.map (a) -> "<tr><td #{style}><img src='#{a.path}'></td><td>#{a.name}</td></tr>"
 
     content = [
       "<html><head><title>Artifacts</title></head><body>",
