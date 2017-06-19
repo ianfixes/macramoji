@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `splosion` coalesces any input animation
 - `dealwithit` glasses enter from the correct spot (top of image) even for small images
 - `dealwithit` glasses enter after animation completes
+- normalization of image sizes now handles gifs properly
 
 ### Security
 

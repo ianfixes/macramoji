@@ -1,4 +1,5 @@
 gm  = require 'gm'
+imageMagick = gm.subClass { imageMagick: true }
 
 ImageResult = require './imageResult'
 
@@ -13,8 +14,6 @@ resultFromGM = (inputGm, workFn, cb, format) ->
     tempGm.write path, (err, result) ->
       console.log "resultFromGM err: #{err}" if err
       cb2(err, result)
-
-
   ImageResult.initFromNewTempFile initFn, cb
 
 # this one is special because other transforms may need it
@@ -22,11 +21,16 @@ resultFromGM = (inputGm, workFn, cb, format) ->
 normalize = (inImageResult, boxSize, cb) ->
   # path, imageresult, callback, input-graphics-magick
   workFn = (inputGm) ->
-    inputGm.in("-resize", "#{boxSize}x#{boxSize}")
-  resultFromGM gm(inImageResult.imgPath()), workFn, (err, outResult) ->
-    if outResult
-      outResult.addTempImages(inImageResult.allTempImages())
-    cb(err, outResult)
+    inputGm.in("-coalesce")
+  resultFromGM imageMagick(inImageResult.imgPath()), workFn, (err, outResult) ->
+    return cb(err) if err
+    outResult.addTempImages(inImageResult.allTempImages()) if outResult
+    work2 = (inputGm2) ->
+      inputGm.in("-resize", "#{boxSize}x#{boxSize}")
+    resultFromGM imageMagick(outResult.imgPath()), workFn, (err2, outResult2) ->
+      return cb(err2) if err2
+      outResult2.addTempImages(outResult.allTempImages()) if outResult2
+      cb(null, outResult2)
 
 module.exports =
   normalize: normalize
