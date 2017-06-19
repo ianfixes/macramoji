@@ -49,6 +49,8 @@ test "defaultMacros", (troot) ->
 
   testMacro "identity", "", [poop], ".gif"
   testMacro "identity_gm", "", [poop], ".gif"
+  testMacro "firstframe", "", [poop], ".gif"
+  testMacro "lastframe", "", [poop], ".gif"
   testMacro "dealwithit", "single arg", [rage1], "_default_glasses.gif"
   testMacro "dealwithit", "single arg no alpha channel", [bob], "_noalpha_default_glasses.gif"
   testMacro "dealwithit", "single arg glasses too big", [rage1_id], "_default_glasses_resized.gif"

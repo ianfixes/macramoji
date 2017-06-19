@@ -23,10 +23,17 @@ identity = (paths, onComplete) ->
 # Test case: output what we input, but use GM
 # underscores are bad style for node, but this name is exposed to slack
 identity_gm = (paths, cb) ->
-  workFn = (inputGm) ->
-    inputGm
+  imageTransform.resultFromGM gm(paths[0]), identityWorkFn, cb, "gif"
 
-  imageTransform.resultFromGM gm(paths[0]), workFn, cb, "gif"
+identityWorkFn = (x) -> x
+
+# Test case: output what we input, but use GM
+firstframe = (paths, cb) ->
+  imageTransform.resultFromGM imageMagick("#{paths[0]}[0]"), identityWorkFn, cb, "png"
+
+# Test case: output what we input, but use GM
+lastframe = (paths, cb) ->
+  imageTransform.resultFromGM imageMagick("#{paths[0]}[-1]"), identityWorkFn, cb, "png"
 
 # Make an explosion
 splosion = (paths, cb) ->
@@ -176,6 +183,8 @@ alterColor = (paths, color, cb) ->
 module.exports =
   identity: identity
   identity_gm: identity_gm
+  firstframe: firstframe
+  lastframe: lastframe
   splosion: splosion
   dealwithit: dealwithit
   intensifies: intensifies

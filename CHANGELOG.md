@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- `firstframe` and `lastframe` gif animation extractors
 
 ### Changed
 - test report is factored a bit better
