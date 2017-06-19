@@ -37,6 +37,10 @@ test 'parser', (troot) ->
     parser.parse("identity(:favico:)")
     t.end()
 
+  test "can parse with whitespace", (t) ->
+    parser.parse("identity( :favico: )")
+    t.end()
+
   test "errors when can't parse", (t) ->
     try
       parser.parse "xxx"

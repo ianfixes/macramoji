@@ -21,7 +21,7 @@
 ")"          { return ')'; }
 ","\s?       { return ','; }
 [a-z0-9_+-]+ { return 'LABEL'; }
-\s+          { return 'SEP'; }
+\s+          { /* skip whitespace */ }
 <<EOF>>      { return 'EOF'; }
 /lex
 
