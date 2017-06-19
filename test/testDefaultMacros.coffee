@@ -14,7 +14,7 @@ outPath = (name) -> path.join(__dirname, 'artifacts', name)
 fileNoExt = (name) -> path.basename name, path.extname(name)
 
 # input images we've defined
-poop     = inPath 'dancingpoop.png'
+poop     = inPath 'dancingpoop.gif'
 bob      = inPath 'bob.png'
 chloe    = inPath 'chloe.gif'
 muscle   = inPath 'muscle-right.png'
