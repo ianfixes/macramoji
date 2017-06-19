@@ -6,9 +6,14 @@ path  = require 'path'
 
 defaultMacros = require '../src/defaultMacros'
 
+# shorthand for filenames
 inPath  = (name) -> path.join(__dirname, 'img', name)
 outPath = (name) -> path.join(__dirname, 'artifacts', name)
+
+# removes extension from filename
 fileNoExt = (name) -> path.basename name, path.extname(name)
+
+# input images we've defined
 poop     = inPath 'dancingpoop.png'
 bob      = inPath 'bob.png'
 muscle   = inPath 'muscle-right.png'
@@ -16,11 +21,11 @@ rage1    = inPath 'rage1.gif'
 rage1_id = inPath 'identity-rage1.gif'
 kamina   = inPath 'kamina_glasses.png'
 
-
 test "defaultMacros", (troot) ->
 
   artifacts = []
 
+  # keep a list of outputs we've made
   createArtifact = (inputPath, filename) ->
     outputPath = outPath(filename)
     fs.createReadStream(inputPath).pipe(fs.createWriteStream(outputPath))
@@ -28,74 +33,41 @@ test "defaultMacros", (troot) ->
       name: fileNoExt(filename)
       path: filename
 
-  test "identity", (t) ->
-    defaultMacros.identity [poop], (result) ->
-      createArtifact(result.imgPath(), 'identity.gif')
-      t.end()
-
-  test "gm-identity", (t) ->
-    defaultMacros.identity_gm [poop], (result) ->
-      createArtifact(result.imgPath(), 'gm_identity.gif')
-      t.end()
-
-  test "dealwithit single arg", (t) ->
-    defaultMacros.dealwithit [rage1], (result) ->
-      createArtifact(result.imgPath(), 'dealwithit_default_glasses.gif')
-      t.end()
-
-  test "dealwithit single arg no alpha channel", (t) ->
-    defaultMacros.dealwithit [bob], (result) ->
-      createArtifact(result.imgPath(), 'dealwithit_noalpha_default_glasses.gif')
-      t.end()
-
-  test "dealwithit single arg glasses too big", (t) ->
-    defaultMacros.dealwithit [rage1_id], (result) ->
-      createArtifact(result.imgPath(), 'dealtwithit_default_glasses_resized.gif')
-      t.end()
-
-  test "dealwithit double arg", (t) ->
-    defaultMacros.dealwithit [rage1, kamina], (result) ->
-      createArtifact(result.imgPath(), 'dealwithit_kamina_glasses.gif')
-      t.end()
-
-  test "dealwithit double arg glasses too big", (t) ->
-    defaultMacros.dealwithit [rage1_id, kamina], (result) ->
-      createArtifact(result.imgPath(), 'dealtwithit_kamina_glasses_resized.gif')
-      t.end()
-
-  test "Explosion from static image", (t) ->
-    defaultMacros.splosion [rage1], (result) ->
-      createArtifact(result.imgPath(), 'static_splosion.gif')
-      t.end()
-
-  test "Explosion from static image no alpha", (t) ->
-    defaultMacros.splosion [bob], (result) ->
-      createArtifact(result.imgPath(), 'static_noalpha_splosion.gif')
-      t.end()
-
-  test "Explosion from static image", (t) ->
-    defaultMacros.dealwithit [rage1, kamina], (result1) ->
-      defaultMacros.splosion [result1.imgPath()], (result) ->
-        createArtifact(result.imgPath(), 'animation_splosion.gif')
+  # do an entire image-generation test.  we can't programmatically check the outputs (well, anything's possible
+  #   but we're really not ready for pixel & encoding perfection here), so we just run tests and keep track of
+  #   the outputs -- for inclusion in an overall summary later
+  testMacro = (macro, label, inputs, outputSuffix) ->
+    fullLabel = macro
+    fullLabel = if label == "" then macro else "#{macro} #{label}"
+    test fullLabel, (t) ->
+      if !(macro of defaultMacros)
+        t.fail("#{macro} contained in #{JSON.stringify(Object.keys(defaultMacros))}")
+        return t.end()
+      defaultMacros[macro] inputs, (result) ->
+        createArtifact(result.imgPath(), "#{macro}#{outputSuffix}")
         t.end()
 
-  test "intensifies from big image", (t) ->
-    defaultMacros.intensifies [rage1], (result) ->
-      createArtifact(result.imgPath(), 'intensifies_big.gif')
-      t.end()
+  testMacro "identity", "", [poop], ".gif"
+  testMacro "identity_gm", "", [poop], ".gif"
+  testMacro "dealwithit", "single arg", [rage1], "_default_glasses.gif"
+  testMacro "dealwithit", "single arg no alpha channel", [bob], "_noalpha_default_glasses.gif"
+  testMacro "dealwithit", "single arg glasses too big", [rage1_id], "_default_glasses_resized.gif"
+  testMacro "dealwithit", "double arg", [rage1, kamina], "_kamina_glasses.gif"
+  testMacro "dealwithit", "double arg glasses too big", [rage1_id, kamina], "_kamina_glasses_resized.gif"
+  testMacro "splosion", "from static image", [rage1], "_static.gif"
+  testMacro "splosion", "from static small image", [rage1_id], "_static_small.gif"
+  testMacro "splosion", "from static image no alpha", [bob], "_static_noalpha.gif"
+  testMacro "splosion", "from animated image", [poop], "_from_animated.gif"
+  testMacro "intensifies", "", [rage1], "_big.gif"
+  testMacro "intensifies", "from smaller image", [rage1_id], "_small.gif"
+  testMacro "intensifies", "from animation", [poop], "_animated.gif"
 
-  test "intensifies from smaller image", (t) ->
-    defaultMacros.intensifies [rage1_id], (result) ->
-      createArtifact(result.imgPath(), 'intensifies_small.gif')
-      t.end()
-
+  # show the original just for comparison purposes, then the actual skintones
+  testMacro "identity", "muscle", [muscle], "_muscle.gif"
   for num in [1..6]
-    do (num) ->
-      test "fitzpatrick skintone #{num}", (t) ->
-        defaultMacros["skintone_#{num}"] [muscle], (result) ->
-          createArtifact(result.imgPath(), "skintone_#{num}.gif")
-          t.end()
+    do (num) -> testMacro "skintone_#{num}", "fitzpatrick", [muscle], ".png"
 
+  # generate HTML report from all those outputs
   test "creates report", (t) ->
     style = "style='background-color:grey;'"
     artifactRows = artifacts.map (a) -> "<tr><td #{style}><img src='#{a.path}'></td><td>#{a.name}</td></tr>"

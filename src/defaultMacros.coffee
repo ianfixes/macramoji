@@ -21,8 +21,8 @@ identity = (paths, onComplete) ->
   ImageResult.initFromNewTempFile initFn, onComplete
 
 # Test case: output what we input, but use GM
+# underscores are bad style for node, but this name is exposed to slack
 identity_gm = (paths, cb) ->
-  explode = path.join(__dirname, '..', 'data', 'img', 'explosion.gif')
   workFn = (inputGm) ->
     inputGm
 
