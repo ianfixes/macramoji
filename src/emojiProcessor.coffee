@@ -51,7 +51,7 @@ class EmojiProcessor
       ])
 
     badFunks = @invalidFunkNames(entities)
-    badEmoji = @invalidEmojiNames(entities, @emojiStore.store)
+    badEmoji = @invalidEmojiNames(entities, @emojiStore.known())
 
     msgs = []
     if badFunks.length > 0

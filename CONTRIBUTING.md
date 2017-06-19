@@ -22,6 +22,8 @@ A very trivial parser extracts the emoji and macro names, creating a tree of wor
 
 ## Packaging for npm
 
+Note to the maintainer
+
 * Commit all desired changes
 * Bump the version in `package.json`
 * Update the sections of `CHANGELOG.md`
@@ -30,5 +32,5 @@ A very trivial parser extracts the emoji and macro names, creating a tree of wor
 * Open & merge pull request with new features, keeping version bump commit on top
 * `git tag -a vVERSION -m "Released version VERSION"`
 * `npm publish`
-* `git push upstream`
+* `git pull --rebase`
 * `git push upstream --tags`

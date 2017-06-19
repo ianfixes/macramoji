@@ -5,7 +5,7 @@ sinon    = require 'sinon'
 parser   = require '../src/parser'
 unparser = require '../src/unparser'
 
-unparsed = ':(dealwithit(:poop:, :kamina-glasses:))splosion:'
+unparsed = '(dealwithit(:poop:, :kamina-glasses:))splosion'
 unparsedEnglish = 'dealwithit-poop-kamina-glasses-splosion'
 parsed =
   entity: 'funk'
@@ -34,7 +34,11 @@ test 'parser', (troot) ->
     t.end()
 
   test "can parse", (t) ->
-    parser.parse(":identity(:favico:):")
+    parser.parse("identity(:favico:)")
+    t.end()
+
+  test "can parse with whitespace", (t) ->
+    parser.parse("identity( :favico: )")
     t.end()
 
   test "errors when can't parse", (t) ->
@@ -44,8 +48,8 @@ test 'parser', (troot) ->
       msg = [
         "Error: Parse error on line 1:"
         "xxx",
-        "^",
-        "Expecting ':', got 'LABEL'"
+        "---^",
+        "Expecting '(', got 'EOF'"
       ].join("\n")
       t.equal("#{e}", msg)
       t.end()
