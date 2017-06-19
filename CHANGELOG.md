@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - test report is factored a bit better
+- animation detection its own function
 
 ### Deprecated
 

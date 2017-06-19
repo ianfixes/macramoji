@@ -10,6 +10,17 @@ ImageResult    = require './imageResult'
 
 debug = false
 
+getImgInfo = (inPath, cb) ->
+  imageMagick(inPath).identify (err, result) ->
+    return cb(err) if err
+    # this is my best guess at how to detect animation with GM
+    isAnimated = err == null \
+      && result.Delay != undefined \
+      && Array.isArray(result.Delay) \
+      && result.Delay.length > 1
+    cb null,
+      isAnimated: isAnimated
+
 # TODO: all exports in this file must act on an array of paths
 # and a callback that takes (err, ImageResult)
 
@@ -39,14 +50,8 @@ lastframe = (paths, cb) ->
 splosion = (paths, cb) ->
   explode = path.join(__dirname, '..', 'data', 'img', 'explosion.gif')
 
-  imageMagick(paths[0]).identify (err, result) ->
-    # this is my best guess at how to detect animation with GM
-    isAnimated = err == null \
-      && result.Delay != undefined \
-      && Array.isArray(result.Delay) \
-      && result.Delay.length > 1
-
-    maybeDelay = if isAnimated then [] else ["-set", "delay", "100"]
+  getImgInfo paths[0], (err, info) ->
+    maybeDelay = if info.isAnimated then [] else ["-set", "delay", "100"]
 
     workFn = (inputGm) ->
       # gm has functions for all of these, and it applies them in a different order
