@@ -12,14 +12,12 @@ debug = false
 
 getImgInfo = (inPath, cb) ->
   imageMagick(inPath).identify (err, result) ->
-    return cb(err) if err
     # this is my best guess at how to detect animation with GM
-    isAnimated = err == null \
+    result.isAnimated = err == null \
       && result.Delay != undefined \
       && Array.isArray(result.Delay) \
       && result.Delay.length > 1
-    cb null,
-      isAnimated: isAnimated
+    cb null, result
 
 # TODO: all exports in this file must act on an array of paths
 # and a callback that takes (err, ImageResult)
@@ -101,8 +99,9 @@ dealwithit = (paths, cb) ->
     imageTransform.resultFromGM imageMagick(), workFn, addTempImages, "gif"
 
   # start with the size -- used to calc speed and offset
-  gm(paths[0]).size (err, size) ->
+  getImgInfo paths[0], (err, info) ->
     # TODO: something with err
+    size = info["size"]
     maxDim = if size.width > size.height then size.width else size.height
     offset = 0
     increment = 4 #Math.max(1, Math.ceil(maxDim / 32))
@@ -148,8 +147,9 @@ dealwithit = (paths, cb) ->
 intensifies = (paths, cb) ->
 
   # start with the size -- used to calc speed and offset
-  gm(paths[0]).size (err, size) ->
+  getImgInfo paths[0], (err, info) ->
     # TODO: something with err
+    size = info["size"]
     maxDim = if size.width > size.height then size.width else size.height
     md = "#{maxDim}x#{maxDim}"
     w = size.width
@@ -160,12 +160,15 @@ intensifies = (paths, cb) ->
     workFn = (inputGm) ->
       # gm has functions for all of these, and it applies them in a different order
       # which is incorrect and honestly kind of infuriating.  so we manually work around.
+      realInput = if info.isAnimated then ["#{paths[0]}[-1]", "-coalesce"] else [paths[0]]
       [
-        ["-dispose", "Previous"],
         ["-delay", "3"],
-        [paths[0], "-resize", "64x64"],
+        realInput,
+        ["-resize", "64x64+0+0"],
         ["\(", "+clone", "-repage", "+1+1", "\)"],
         ["\(", "+clone", "-repage", "+0+1", "\)"],
+        # rather than dispose previous, we need to force it for all frames in memory.  affects animated gif inputs
+        ["-set", "dispose", "Previous"],
         ["-loop", "0"],
       ].reduce ((acc, elem) -> acc.in.apply(acc, elem)), inputGm
 
