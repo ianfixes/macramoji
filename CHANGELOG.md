@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- "built-in" emoji, courtesy of `emoji-datasource-apple`
 
 ### Changed
 

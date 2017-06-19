@@ -3,22 +3,38 @@ tmp = require 'tmp'
 http = require 'http'
 https = require 'https'
 urllib = require 'url'
+builtIn = require 'emoji-datasource-apple'
+
+path = require 'path'
+getInstalledPath = require 'get-installed-path'
 
 ImageResult = require './imageResult'
+ImageContainer = require './imageContainer'
+
+spritePath = (filename) ->
+  eda = getInstalledPath.sync('emoji-datasource-apple', {local: true})
+  path.join(eda, 'img', 'apple', '64', filename)
+
+slackEmoji = {}
+for e in builtIn when e.has_img_apple
+  for short_name in e.short_names
+    slackEmoji[short_name] = spritePath(e.image)
 
 # We need to get the emoji from Slack via their client.
 # Try to stay up to date, but don't go nuts.
 class EmojiStore
   constructor: (@slackClient, fetchIntervalSeconds) ->
-    @store = {}
+    @urls = {}
     @timer = null
+    @builtIn = slackEmoji
     @fetchEmoji()
     @setFetchInterval(fetchIntervalSeconds)
+
 
   fetchEmoji: (onComplete) =>
     @slackClient.emoji.list (err, result) =>
       console.log "emoji.list got #{Object.keys(result.emoji).length} emoji)"
-      @updateStore(result.emoji)
+      @updateUrls(result.emoji)
       onComplete() if onComplete?
 
   setFetchInterval: (seconds) ->
@@ -29,12 +45,15 @@ class EmojiStore
     @timer = setInterval fetchEmoji, seconds * 1000
 
   known: () ->
-    Object.keys @store
+    ret = {}
+    for x in Object.keys(@urls).concat(Object.keys(@builtIn))
+      ret[x] = true
+    ret
 
   hasEmoji: (name) ->
-    name of @store
+    (name of @urls) || (name of @builtIn)
 
-  updateStore: (emojiUrls) =>
+  updateUrls: (emojiUrls) =>
     alias = 'alias:'
     handleUrl = (url) ->
       if url.indexOf(alias) != 0
@@ -42,13 +61,13 @@ class EmojiStore
       else
         {alias: url.substr(alias.length)}
 
-    @store = {}
+    @urls = {}
     for name, url of emojiUrls
       data = handleUrl(url)
       if "url" of data
-        @store[name] = data.url
+        @urls[name] = data.url
       else
-        @store[name] = emojiUrls[data.alias]
+        @urls[name] = emojiUrls[data.alias]
 
   download: (srcUrl, dest, cb) ->
     file = fs.createWriteStream(dest)
@@ -62,9 +81,20 @@ class EmojiStore
       cb(err.message)
     )
 
-  # a function for an ImageWorker
-  workFn: (desired) ->
-    url = @store[desired]
+  # a function for use in an ImageWorker
+  workFn: (desired) =>
+    return @workFnUrl(desired) if desired of @urls
+    return @workFnFile(desired) if desired of @builtIn
+
+  # a function for an ImageWorker when file is local
+  workFnFile: (desired) ->
+    file = @builtIn[desired]
+    return (argsWhichArePaths, onComplete) ->
+      onComplete(new ImageResult([], [], new ImageContainer(file, () -> )))
+
+  # a function for an ImageWorker when file is remote
+  workFnUrl: (desired) ->
+    url = @urls[desired]
     # callback takes error or null
     initImageResultByDownloading = (path, callback) =>
       @download url, path, (err) ->

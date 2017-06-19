@@ -16,9 +16,14 @@ fakeClient =
 test 'Emoji Store', (troot) ->
   test 'can initialize emoji store with fake client', (t) ->
     es = new EmojiStore(fakeClient, 0)
-    t.deepEqual(es.store,
+    t.deepEqual(es.urls,
       favico: 'http://tinylittlelife.org/favicon.ico')
     t.true(es.hasEmoji("favico"))
+    t.end()
+
+  test 'builtins work', (t) ->
+    es = new EmojiStore(fakeClient, 0)
+    t.ok(es.hasEmoji("copyright"), "emoji has :copyright:")
     t.end()
 
   test 'can download, run stats, and cleanup', (t) ->

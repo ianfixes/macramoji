@@ -36,6 +36,8 @@
   },
   "dependencies": {
     "async": "^2.4.1",
+    "emoji-datasource-apple": "^3.0.0",
+    "get-installed-path": "^2.0.3",
     "gm": "^1.23.0",
     "jison": "https://github.com/zaach/jison.git#7653842e5120510b0b77484ac90d6c569cf146fd",
     "tmp": "0.0.31",

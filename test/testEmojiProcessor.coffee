@@ -220,14 +220,21 @@ test 'EmojiProcessor', (troot) ->
   doe2e "Can do an end-to-end test with bad funk", ":nope(:favico:):", (t, slackResp, ee) ->
     t.equal("I didn't understand some of `:nope(:favico:):`:\n • Unknown function names: nope",slackResp.message)
 
-  doe2e "Can do an end-to-end test with bad emoji", ":identity(:poop:):", (t, slackResp, ee) ->
-    t.equal("I didn't understand some of `:identity(:poop:):`:\n • Unknown emoji names: poop",slackResp.message)
+  doe2e "Can do an end-to-end test with bad emoji", ":identity(:pooop:):", (t, slackResp, ee) ->
+    t.equal("I didn't understand some of `:identity(:pooop:):`:\n • Unknown emoji names: pooop",slackResp.message)
 
-  doe2e "Can do an end-to-end test with bad funk/emoji", ":nope(x(:poop:, :y:)):", (t, slackResp) ->
+  doe2e "Can do an end-to-end test with bad funk/emoji", ":nope(x(:pooop:, :y:)):", (t, slackResp) ->
     t.equal([
-      "I didn't understand some of `:nope(x(:poop:, :y:)):`:",
+      "I didn't understand some of `:nope(x(:pooop:, :y:)):`:",
       " • Unknown function names: nope, x",
-      " • Unknown emoji names: poop, y"].join("\n"), slackResp.message)
+      " • Unknown emoji names: pooop, y"].join("\n"), slackResp.message)
+
+  doe2e "Can do an end-to-end test with builtin emoji", ":identity(:copyright:):", (t, slackResp, ee) ->
+    t.equal(slackResp.message, null)
+    t.true(slackResp.imgResult)
+    t.equal(slackResp.imgResult.constructor.name, "ImageResult")
+    t.equal("identity-copyright", slackResp.fileDesc)
+    t.equal(slackResp.imgResult.allTempImages().length, 2)
 
   doe2e "Can do an end-to-end test with good entities", ":identity(:favico:):", (t, slackResp, ee) ->
     t.equal(slackResp.message, null)
