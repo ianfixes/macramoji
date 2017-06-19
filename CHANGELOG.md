@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - `intensifies` uses the final frame of an input animation instead of mangling several frames
+- `splosion` coalesces any input animation
 
 ### Security
 
