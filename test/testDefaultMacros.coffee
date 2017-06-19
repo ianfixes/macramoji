@@ -16,6 +16,7 @@ fileNoExt = (name) -> path.basename name, path.extname(name)
 # input images we've defined
 poop     = inPath 'dancingpoop.png'
 bob      = inPath 'bob.png'
+chloe    = inPath 'chloe.gif'
 muscle   = inPath 'muscle-right.png'
 rage1    = inPath 'rage1.gif'
 rage1_id = inPath 'identity-rage1.gif'
@@ -54,6 +55,7 @@ test "defaultMacros", (troot) ->
   testMacro "dealwithit", "single arg", [rage1], "_default_glasses.gif"
   testMacro "dealwithit", "single arg no alpha channel", [bob], "_noalpha_default_glasses.gif"
   testMacro "dealwithit", "single arg glasses too big", [rage1_id], "_default_glasses_resized.gif"
+  testMacro "dealwithit", "single arg animation", [chloe], "_animation.gif"
   testMacro "dealwithit", "double arg", [rage1, kamina], "_kamina_glasses.gif"
   testMacro "dealwithit", "double arg glasses too big", [rage1_id, kamina], "_kamina_glasses_resized.gif"
   testMacro "splosion", "from static image", [rage1], "_static.gif"

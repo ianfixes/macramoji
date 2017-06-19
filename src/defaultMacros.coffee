@@ -74,42 +74,46 @@ dealwithit = (paths, cb) ->
   glasses = paths[1] || path.join(__dirname, '..', 'data', 'img', 'dealwithit_glasses.png')
   frames = []
 
-  # final wrapup function
-  onFramesAvailable = (err) ->
-    workFn = (inputGm) ->
-      # TODO: assemble all the frames.  first and last should get some longer delays
-      fl = frames[0].path    # remember, array is in reverse so last frame is 0
-      ff = paths[0]
-      midframes = frames.slice(1, frames.length - 2)
-      appendFrame = (acc, elem) ->
-        acc.in.apply(acc, [elem.path])
-
-      outputGm = inputGm.in("-dispose", "Previous").in("-delay", "100").in(ff)
-      outputGm = midframes.reduceRight appendFrame, outputGm.in("-delay", "8")
-      outputGm = outputGm.in("-dispose", "Previous").in("-delay", "200").in(fl)
-      outputGm = outputGm.in("-loop", "0")
-      console.log("onFramesAvailable: #{outputGm.args()}") if debug
-      outputGm
-
-    # final callback wrapper to put in all temp images
-    addTempImages = (result) ->
-      result.addTempImages(frames)
-      cb(result)
-
-    imageTransform.resultFromGM imageMagick(), workFn, addTempImages, "gif"
-
   # start with the size -- used to calc speed and offset
   getImgInfo paths[0], (err, info) ->
     # TODO: something with err
+    realInput = if info.isAnimated then ["#{paths[0]}[-1]"] else [paths[0]]
     size = info["size"]
     maxDim = if size.width > size.height then size.width else size.height
     offset = 0
     increment = 4 #Math.max(1, Math.ceil(maxDim / 32))
 
+    # final wrapup function
+    onFramesAvailable = (err) ->
+      workFn = (inputGm) ->
+        # TODO: assemble all the frames.  first and last should get some longer delays
+        fl = frames[0].path    # remember, array is in reverse so last frame is 0
+        ff = paths[0]
+        midframes = frames.slice(1, frames.length - 2)
+        appendFrame = (acc, elem) ->
+          acc.in.apply(acc, [elem.path])
+
+        if info.isAnimated
+          outputGm = inputGm.in("-dispose", "Previous").in("-alpha", "on").in("-background", "none").in(ff)
+        else
+          outputGm = inputGm.in("-dispose", "Previous").in("-delay", "100").in(ff)
+        outputGm = midframes.reduceRight appendFrame, outputGm.in("-delay", "8")
+        outputGm = outputGm.in("-dispose", "Previous").in("-delay", "200").in(fl)
+        outputGm = outputGm.in("-loop", "0")
+        console.log("onFramesAvailable: #{outputGm.args()}") if debug
+        outputGm
+
+      # final callback wrapper to put in all temp images
+      addTempImages = (result) ->
+        result.addTempImages(frames)
+        cb(result)
+
+      imageTransform.resultFromGM imageMagick(), workFn, addTempImages, "gif"
+
     # truth function for the async.during call
     notTooHigh = (callback) ->
       return callback(null, true) if frames.length < 2
-      return callback(null, false) if offset > maxDim
+      return callback(null, false) if offset > maxDim * 2
       # when 2 images are not equal, we are not too high with the glasses.
       # when glasses go out of frame, the 2 images WILL be equal
       f1 = frames[frames.length - 1].path
@@ -129,8 +133,7 @@ dealwithit = (paths, cb) ->
           ["-alpha", "on"],
           ["-size", "#{maxDim}x#{maxDim}"],
           ["-background", "none"],
-          ["-page", "+0+0", paths[0]],
-          #["-page", "-0-#{offset}", glasses]
+          ["-page", "+0+0", realInput],
           ["-page", "-0-#{offset}", "\(", glasses, "-resize", "#{maxDim}x#{maxDim}", "\)"]
           ["-layers", "flatten"],
         ].reduce ((acc, elem) -> acc.in.apply(acc, elem)), imageMagick()

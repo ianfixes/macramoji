@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - `intensifies` uses the final frame of an input animation instead of mangling several frames
 - `splosion` coalesces any input animation
+- `dealwithit` glasses enter from the correct spot (top of image) even for small images
+- `dealwithit` glasses enter after animation completes
 
 ### Security
 
