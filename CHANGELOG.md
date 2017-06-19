@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - "built-in" emoji, courtesy of `emoji-datasource-apple`
 
 ### Changed
+- required syntax loses the enclosing `:` characters
 
 ### Deprecated
 

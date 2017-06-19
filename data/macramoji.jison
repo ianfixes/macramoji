@@ -21,6 +21,7 @@
 ")"          { return ')'; }
 ","\s?       { return ','; }
 [a-z0-9_+-]+ { return 'LABEL'; }
+\s+          { return 'SEP'; }
 <<EOF>>      { return 'EOF'; }
 /lex
 
@@ -30,7 +31,7 @@
 %%
 
 macramoji
-  : ':' emojifunk ':' EOF
+  : emojifunk EOF
     { return $emojifunk; }
   ;
 
