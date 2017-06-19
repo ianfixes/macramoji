@@ -16,6 +16,15 @@ This produces the following gif (assuming you have `kamina-glasses`):
 
 ![dealwithit-rage1-kamina-glasses-splosion](doc/dealwithit-rage1-kamina-glasses-splosion.gif)
 
+## Defined macros
+
+* `dealwithit(<base> [, glasses])` - Draw sunglasses that descend onto the `base` emoji.  Optionally, provide the emoji for the `glasses` that will be used.
+* `(<base>)splosion` - Draw the `base` emoji followed by an explosion
+* `firstframe(<base>)` - Take the first frame of `base`
+* `lastframe(<base>)` - Take the last frame of `base`
+* `(<base>)intensifies` - Make the last frame of `base` shake intensely
+* `(<base>)skintone_1` - Colorize `base` in Fitzpatrick skin tone 1.  Tones 1-6 are defined
+
 
 # Reference Implementation: Hubot script
 
@@ -67,8 +76,14 @@ processor.addMacro("greyscale", greyscaleMacro)
 
 You are encouraged to [contribute](CONTRIBUTING.md) functions that you write back to this project by adding them to `defaultMacros.coffee`.
 
+# Known Issues
+
 
 # TODO
 
 * Check that proper cleanup is happening
 * Enable slack reponses without hubot
+
+# Author
+
+Macramoji was written by [Ian Katz](mailto:ianfixes@gmail.com) in 2017, after realizing that making explosion gifs for literally hundreds of emoji just wasn't scalable.

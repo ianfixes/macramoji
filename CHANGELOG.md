@@ -6,10 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- "built-in" emoji, courtesy of `emoji-datasource-apple`
 
 ### Changed
-- required syntax loses the enclosing `:` characters
 
 ### Deprecated
 
@@ -18,6 +16,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 ### Security
+
+
+## [0.1.4] - 2017-06-19
+### Added
+- "built-in" emoji, courtesy of `emoji-datasource-apple`
+
+### Changed
+- required syntax loses the enclosing `:` characters
 
 
 ## [0.1.3] - 2017-06-19
@@ -64,7 +70,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - The entire initial release, enabling `splosion` and `dealwithit` macros.
 - 2 debug macros `identity` and `identity-gm`
 
-[Unreleased]: https://github.com/ifreecarve/macramoji/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/ifreecarve/macramoji/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/ifreecarve/macramoji/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/ifreecarve/macramoji/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/ifreecarve/macramoji/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/ifreecarve/macramoji/compare/v0.1.0...v0.1.1
