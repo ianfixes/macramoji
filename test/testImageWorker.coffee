@@ -5,13 +5,10 @@ ImageResult = require '../src/imageResult'
 ImageWorker = require '../src/imageWorker'
 EmojiStore  = require '../src/emojiStore'
 
-fakeClient =
-  emoji:
-    list: (cb) ->
-      cb null,
-        emoji:
-          favico: 'http://tinylittlelife.org/favicon.ico'
-fakeEmojiStore = new EmojiStore(fakeClient, 0)
+emojiFetchFn = (cb) ->
+  cb null,
+    favico: 'http://tinylittlelife.org/favicon.ico'
+fakeEmojiStore = new EmojiStore(emojiFetchFn, 0)
 
 fakeMacros =
   identity: (args, onComplete) ->

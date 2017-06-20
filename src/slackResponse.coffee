@@ -17,12 +17,12 @@ class SlackResponse
     @imgResult = imgResult
     @fileDesc = fileDesc
 
-  respond: (slackResponseObject) ->
+  respondHubot: (slackResponseObject) ->
     slackResponseObject.send @message if @message
-    @imgResult && @upload(slackResponseObject, @imgResult.imgPath(), @fileDesc)
+    @imgResult && @uploadHubot(slackResponseObject, @imgResult.imgPath(), @fileDesc)
 
   # TODO: remove hubot dependency
-  upload: (slackResponseObject, filename, label) ->
+  uploadHubot: (slackResponseObject, filename, label) ->
     robot = slackResponseObject.robot
     # slack API for file.upload
 

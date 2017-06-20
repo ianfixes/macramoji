@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 ### Changed
+- `EmojiStore` constructor now takes an emoji-fetching function instead of a particular Slack API object
+- `SlackResponse` object now uses `respondHubot` instead of `respond`, to make room for other types of responses
 
 ### Deprecated
 

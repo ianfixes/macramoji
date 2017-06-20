@@ -34,13 +34,17 @@ This script allows you to message a hubot instance with the command `emojify (de
 macramoji = require 'macramoji'
 refreshSeconds = 15 * 60 # refesh emoji list every 15 minutes
 module.exports = (robot) ->
-  emojiStore = new macramoji.EmojiStore(robot.adapter.client.web, refreshSeconds)
+  emojiFetchFn = (callback) ->
+    robot.adapter.client.web.emoji.list (err, result) ->
+      return callback(err) if err
+      callback(err, result.emoji)
+  emojiStore = new macramoji.EmojiStore(emojiFetchFn, refreshSeconds)
   processor = new macramoji.EmojiProcessor(emojiStore, macramoji.defaultMacros)
 
   robot.respond /emojify (.*)/i, (res) ->
     emojiStr = res.match[1].trim()
     processor.process emojiStr, (slackResp) ->
-      slackResp.respond(res)
+      slackResp.respondHubot(res)
 ```
 
 # Defining Your Own Functions
