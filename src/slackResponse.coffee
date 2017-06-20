@@ -19,15 +19,15 @@ class SlackResponse
 
   respondHubot: (slackResponseObject) ->
     slackResponseObject.send @message if @message
-    @imgResult && @uploadHubot(slackResponseObject, @imgResult.imgPath(), @fileDesc)
+    @imgResult && @uploadHubot slackResponseObject, @imgResult.imgPath(), @fileDesc, () =>
+      @imgResult.cleanup()
 
-  # TODO: remove hubot dependency
-  uploadHubot: (slackResponseObject, filename, label) ->
+  uploadHubot: (slackResponseObject, filename, label, onComplete) ->
     robot = slackResponseObject.robot
     # slack API for file.upload
 
     # get upload type and go
-    gm(filename).format (err, fmt) =>
+    gm(filename).format (err, fmt) ->
       format = if err then 'gif' else fmt
       contentOpts =
           #content: fs.readFileSync(tmpPath), # doesn't work with binary
@@ -35,9 +35,9 @@ class SlackResponse
           channels: slackResponseObject.message.room,
           fileType: format # TODO: figure it out
 
-      robot.adapter.client.web.files.upload "#{label}.gif", contentOpts, (fileUploadErr, resp) =>
+      robot.adapter.client.web.files.upload "#{label}.#{format}", contentOpts, (fileUploadErr, resp) ->
         console.log(resp)
-        @imgResult.cleanup()
+        onComplete()
 
 
 module.exports = SlackResponse
