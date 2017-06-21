@@ -39,12 +39,12 @@ class EmojiStore
       @updateUrls(result)
       onComplete() if onComplete?
 
-  setFetchInterval: (seconds) ->
+  setFetchInterval: (seconds) =>
     clearInterval(@timer) if @timer?
     return if seconds == 0
     return if seconds == undefined
     return unless seconds?
-    @timer = setInterval fetchEmoji, seconds * 1000
+    @timer = setInterval @fetchEmoji, seconds * 1000
 
   known: () ->
     ret = {}

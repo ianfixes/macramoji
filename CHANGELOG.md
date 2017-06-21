@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 
 ### Fixed
+- Emoji refresh had a missing reference to `this`.  It now properly refreshes on its timer.
 
 ### Security
 
