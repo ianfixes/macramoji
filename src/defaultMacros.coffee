@@ -57,10 +57,10 @@ splosion = (paths, cb) ->
       [
         ["-dispose", "Previous"],
         realInput,
-        ["-resize", "128x128"],
+        ["-resize", "64x64"],
         ["-background", "transparent"],
         ["-gravity", "center"],
-        ["-extent", "128x128"],
+        ["-extent", "64x64"],
         ["-set", "page", "+0+0"],
         ["-delay", "10"],
         [explode],

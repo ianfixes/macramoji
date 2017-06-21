@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - `EmojiStore` constructor now takes an emoji-fetching function instead of a particular Slack API object
 - `SlackResponse` object now uses `respondHubot` instead of `respond`, to make room for other types of responses
+- `splosion` macro now uses 64x64 explosion gif, because the larger one looked pixely
 
 ### Deprecated
 
