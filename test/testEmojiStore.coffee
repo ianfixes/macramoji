@@ -6,28 +6,25 @@ ImageResult = require '../src/imageResult'
 ImageWorker = require '../src/imageWorker'
 EmojiStore  = require '../src/emojiStore'
 
-fakeClient =
-  emoji:
-    list: (cb) ->
-      cb null,
-        emoji:
-          favico: 'http://tinylittlelife.org/favicon.ico'
+emojiFetchFn = (cb) ->
+  cb null,
+    favico: 'http://tinylittlelife.org/favicon.ico'
 
 test 'Emoji Store', (troot) ->
   test 'can initialize emoji store with fake client', (t) ->
-    es = new EmojiStore(fakeClient, 0)
+    es = new EmojiStore(emojiFetchFn, 0)
     t.deepEqual(es.urls,
       favico: 'http://tinylittlelife.org/favicon.ico')
     t.true(es.hasEmoji("favico"))
     t.end()
 
   test 'builtins work', (t) ->
-    es = new EmojiStore(fakeClient, 0)
+    es = new EmojiStore(emojiFetchFn, 0)
     t.ok(es.hasEmoji("copyright"), "emoji has :copyright:")
     t.end()
 
   test 'can download, run stats, and cleanup', (t) ->
-    es = new EmojiStore(fakeClient, 0)
+    es = new EmojiStore(emojiFetchFn, 0)
 
     doTheThing = es.workFn("favico")
     doTheThing [], (result) ->

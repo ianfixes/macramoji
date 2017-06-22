@@ -23,7 +23,9 @@ for e in builtIn when e.has_img_apple
 # We need to get the emoji from Slack via their client.
 # Try to stay up to date, but don't go nuts.
 class EmojiStore
-  constructor: (@slackClient, fetchIntervalSeconds) ->
+  # emojiFetchFn takes a callback (err, result)
+  #   where result is is a { short_name: URL } dictionary
+  constructor: (@emojiFetchFn, fetchIntervalSeconds) ->
     @urls = {}
     @timer = null
     @builtIn = slackEmoji
@@ -32,17 +34,17 @@ class EmojiStore
 
 
   fetchEmoji: (onComplete) =>
-    @slackClient.emoji.list (err, result) =>
-      console.log "emoji.list got #{Object.keys(result.emoji).length} emoji)"
-      @updateUrls(result.emoji)
+    @emojiFetchFn (err, result) =>
+      console.log "fetchEmoji got #{Object.keys(result).length} emoji"
+      @updateUrls(result)
       onComplete() if onComplete?
 
-  setFetchInterval: (seconds) ->
+  setFetchInterval: (seconds) =>
     clearInterval(@timer) if @timer?
     return if seconds == 0
     return if seconds == undefined
     return unless seconds?
-    @timer = setInterval fetchEmoji, seconds * 1000
+    @timer = setInterval @fetchEmoji, seconds * 1000
 
   known: () ->
     ret = {}

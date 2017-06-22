@@ -104,13 +104,6 @@ class EmojiProcessor
         ret.setMessage("Processing `#{emojiStr}` produced the following errors: #{probList}")
       return onComplete(ret)
 
-  # process a message
-  # respond to user
-  # delete the temp files (cleanup)
-  respondToChatMessage: (emojiStr, slackMessageObject) ->
-    @process emojiStr, (slackResp) ->
-      slackResp.respond(slackMessageObject)
-
   reduce: (parseTree, acc, onEach) ->
     here = onEach(acc, parseTree)
     if 'args' of parseTree
