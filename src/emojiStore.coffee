@@ -35,7 +35,7 @@ class EmojiStore
 
   fetchEmoji: (onComplete) =>
     @emojiFetchFn (err, result) =>
-      console.log "emojiFetchFn got #{Object.keys(result).length} emoji"
+      console.log "fetchEmoji got #{Object.keys(result).length} emoji"
       @updateUrls(result)
       onComplete() if onComplete?
 
