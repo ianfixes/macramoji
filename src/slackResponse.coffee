@@ -17,10 +17,29 @@ class SlackResponse
     @imgResult = imgResult
     @fileDesc = fileDesc
 
+  respondBotkit: (payload, bot, webApi) ->
+    bot.replyPrivate @message if @message
+    @imgResult && @uploadBotkit bot, payload.channel, @imgResult.imgPath(), @fileDesc, () =>
+      @imgResult.cleanup()
+
   respondHubot: (slackResponseObject) ->
     slackResponseObject.send @message if @message
     @imgResult && @uploadHubot slackResponseObject, @imgResult.imgPath(), @fileDesc, () =>
       @imgResult.cleanup()
+
+  uploadBotkit: (bot, channel, filename, label) ->
+    gm(@imgResult.imgPath()).format (err, fmt) =>
+      format = if err then 'gif' else fmt
+
+      bot.api.files.upload
+        title: @fileDesc,
+        filename: "#{@fileDesc}.#{format}",
+        filetype: format,
+        channels: channel,
+        file: fs.createReadStream(@imgResult.imgPath()),
+      , (err, resp) =>
+        console.log("upload got: #{err} #{JSON.stringify(err)} #{JSON.stringify(resp)}")
+        @imgResult.cleanup()
 
   uploadHubot: (slackResponseObject, filename, label, onComplete) ->
     robot = slackResponseObject.robot

@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- `respondBotkit` function for future botkit integrations
 
 ### Changed
 - `EmojiStore` constructor now takes an emoji-fetching function instead of a particular Slack API object
