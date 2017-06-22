@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Emoji refresh had a missing reference to `this`.  It now properly refreshes on its timer.
+- Explosion macro wasn't causing the original emoji to disappear as if exploded.
 
 ### Security
 

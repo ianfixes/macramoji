@@ -49,8 +49,7 @@ splosion = (paths, cb) ->
   explode = path.join(__dirname, '..', 'data', 'img', 'explosion.gif')
 
   getImgInfo paths[0], (err, info) ->
-    realInput = if info.isAnimated then [paths[0], "-coalesce"] else ["-delay", "100", paths[0]]
-
+    realInput = if info.isAnimated then [paths[0]] else ["-delay", "100", paths[0]]
     workFn = (inputGm) ->
       # gm has functions for all of these, and it applies them in a different order
       # which is incorrect and honestly kind of infuriating.  so we manually work around.

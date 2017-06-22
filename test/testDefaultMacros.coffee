@@ -21,6 +21,7 @@ muscle   = inPath 'muscle-right.png'
 rage1    = inPath 'rage1.gif'
 rage1_id = inPath 'identity-rage1.gif'
 kamina   = inPath 'kamina_glasses.png'
+flux     = inPath 'flux_capacitor_128.gif'
 
 test "defaultMacros", (troot) ->
 
@@ -62,6 +63,7 @@ test "defaultMacros", (troot) ->
   testMacro "splosion", "from static small image", [rage1_id], "_static_small.gif"
   testMacro "splosion", "from static image no alpha", [bob], "_static_noalpha.gif"
   testMacro "splosion", "from animated image", [poop], "_from_animated.gif"
+  testMacro "splosion", "from full frame animated image", [flux], "_from_fullframe_animation.gif"
   testMacro "intensifies", "", [rage1], "_big.gif"
   testMacro "intensifies", "from smaller image", [rage1_id], "_small.gif"
   testMacro "intensifies", "from animation", [poop], "_animated.gif"
