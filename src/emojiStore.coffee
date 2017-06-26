@@ -35,9 +35,15 @@ class EmojiStore
 
   fetchEmoji: (onComplete) =>
     @emojiFetchFn (err, result) =>
-      console.log "fetchEmoji got #{Object.keys(result).length} emoji"
+      console.log "fetchEmoji's emojiFetchFn got #{Object.keys(result).length} emoji"
       @updateUrls(result)
       onComplete() if onComplete?
+
+  addEmoji: (name, url) =>
+    @urls[name] = url
+
+  deleteEmoji: (name) =>
+    delete @urls[name]
 
   setFetchInterval: (seconds) =>
     clearInterval(@timer) if @timer?
