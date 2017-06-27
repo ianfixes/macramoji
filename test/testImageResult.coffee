@@ -60,18 +60,5 @@ test 'ImageResult', (troot) ->
     ir1.addResult ic3
     ir1.cleanup()
 
-  # test 'supercedes', (t) ->
-  #   ir1 = new ImageResult
-  #   msg = "abc"
-  #   ir1.errorMessages.push(msg)
-  #   t.deepEqual(ir1.errorMessages, [msg])
-  #   t.equal(ir1.imgPath(), null)
-  #   ir1.intermediateImages.push(ic1)
-  #   ir2 = ir1.supercede()
-  #   t.equal(ir2.intermediateImages.length, 1)
-  #   t.equal(ir2.intermediateImages[0].path, ic1.path)
-  #   t.deepEqual(ir1.errorMessages, ir2.errorMessages)
-  #   t.end()
-
   troot.end()
 

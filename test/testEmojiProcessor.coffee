@@ -16,12 +16,7 @@ emojiFetchFn = (cb) ->
     favico: 'http://tinylittlelife.org/favicon.ico'
 fakeEmojiStore = new EmojiStore(emojiFetchFn, 0)
 
-fakeMacros =
-  identity: (args, onComplete) ->
-    initFn = (path, cb) ->
-      fs.writeFileSync(path, fs.readFileSync(args[0]))
-      cb()
-    ImageResult.initFromNewTempFile initFn, onComplete
+allMacros = require '../src/defaultMacros'
 
 test 'EmojiProcessor', (troot) ->
   test 'parser exists', (t) ->

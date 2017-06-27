@@ -5,19 +5,6 @@ ImageResult = require '../src/imageResult'
 ImageWorker = require '../src/imageWorker'
 EmojiStore  = require '../src/emojiStore'
 
-emojiFetchFn = (cb) ->
-  cb null,
-    favico: 'http://tinylittlelife.org/favicon.ico'
-fakeEmojiStore = new EmojiStore(emojiFetchFn, 0)
-
-fakeMacros =
-  identity: (args, onComplete) ->
-    initFn = (path, cb) ->
-      fs.writeFileSync(path, fs.readFileSync(args[0]))
-      cb()
-    ImageResult.initFromNewTempFile initFn, onComplete
-
-
 # make a fake image worker that "resolves"
 #   by returning the value passed here as an arg
 mkResolver = (val, label) ->
