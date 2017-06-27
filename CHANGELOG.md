@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
--`ImageContainer` now tracks `existingContainerCount` for debugging purposes
+- `ImageContainer` now tracks `existingContainerCount` for debugging purposes
 
 ### Changed
 
@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 
 ### Fixed
+- `SlackResponse.cleanup` now actually calls lower-level cleanup
 
 ### Security
 
