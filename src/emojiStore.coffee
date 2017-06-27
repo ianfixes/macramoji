@@ -1,5 +1,4 @@
 fs = require 'fs'
-tmp = require 'tmp'
 http = require 'http'
 https = require 'https'
 urllib = require 'url'

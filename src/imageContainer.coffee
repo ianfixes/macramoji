@@ -2,6 +2,7 @@ tmp = require 'tmp'
 fs  = require 'fs'
 gm  = require 'gm'
 
+containersExisting = 0
 
 class ImageContainer
   constructor: (@path, @cleanupCallback) ->
@@ -13,8 +14,14 @@ class ImageContainer
       if err
         callback(err)
       else
-        ret = new ImageContainer(path, cleanupCallback)
+        containersExisting = containersExisting + 1
+        ret = new ImageContainer path, () ->
+          containersExisting = containersExisting - 1
+          cleanupCallback()
         callback(null, ret)
+
+  @existingContainerCount: ->
+    containersExisting
 
   cleanup: =>
     @cleanupCallback && !@cleaned && @cleanupCallback()
