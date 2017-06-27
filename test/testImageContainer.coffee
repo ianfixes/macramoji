@@ -22,4 +22,15 @@ test 'ImageContainer', (troot) ->
       t.equal(typeof ic1.cleanupCallback, "function", "cleanup is function")
       t.end()
 
+  test "idempotent cleanup", (t) ->
+    count = 0
+    ic1 = new ImageContainer "foo", () ->
+      count = count + 1
+    t.equal(count, 0, "cleanup callback hasn't been called")
+    ic1.cleanup()
+    t.equal(count, 1, "cleanup callback has been called")
+    ic1.cleanup()
+    t.equal(count, 1, "cleanup callback hasn't been called twice")
+    t.end()
+
   troot.end()

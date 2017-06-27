@@ -10,6 +10,9 @@ class SlackResponse
     @fileName = null
     @fileDesc = null
 
+  cleanup: ->
+    @imgResult && @imgResult.cleanup()
+
   setMessage: (msg) ->
     @message = msg
 
@@ -17,15 +20,30 @@ class SlackResponse
     @imgResult = imgResult
     @fileDesc = fileDesc
 
-  respondBotkit: (payload, bot, webApi) ->
+  respondBotkit: (payload, bot, webApi) =>
     bot.replyPrivate @message if @message
     @imgResult && @uploadBotkit bot, payload.channel, @imgResult.imgPath(), @fileDesc, () =>
-      @imgResult.cleanup()
+      @cleanup()
 
-  respondHubot: (slackResponseObject) ->
+  respondHubot: (slackResponseObject) =>
     slackResponseObject.send @message if @message
     @imgResult && @uploadHubot slackResponseObject, @imgResult.imgPath(), @fileDesc, () =>
-      @imgResult.cleanup()
+      @cleanup()
+
+  replyPrivateBB: (respondFn, text, onComplete) ->
+    respondFn
+      text: text,
+      response_type: "ephemeral"
+    , (err, data) ->
+      onComplete() if onComplete
+
+  respondBeepBoopSlashCommand: (channelId, bot, respondFn) =>
+    if @message
+      @replyPrivateBB respondFn, @message, @cleanup
+    else if @imgResult
+      # WE APPARENTLY DO NOT NEED ACK { reponse_type: in_channel } IN THIS FRAMEWORK
+      @uploadBeepBoop(channelId, bot, respondFn, @cleanup)
+
 
   uploadBotkit: (bot, channel, filename, label) ->
     gm(@imgResult.imgPath()).format (err, fmt) =>
@@ -58,5 +76,25 @@ class SlackResponse
         console.log(resp)
         onComplete()
 
+  uploadBeepBoop: (channelId, bot, respondFn, onComplete) =>
+    path = @imgResult.imgPath()
+    gm(path).format (err, fmt) =>
+      format = if err then 'gif' else fmt
+      fileName = @fileDesc + "." + format
+
+      streamOpts =
+        file: fs.createReadStream(path),
+        title: @fileDesc,
+        filetype: format,
+        channels: channelId,
+
+      bot.files.upload fileName, streamOpts, (err, res) =>
+        # if (err) console.log("bot.files.upload err: " + JSON.stringify(err, null, 2));
+        # console.log("bot.files.upload res: " + JSON.stringify(res, null, 2));
+
+        if res.error == "invalid_channel"
+          @replyPrivateBB respondFn, "I can't upload here.  Try this in a public channel or, DM me."
+
+        onComplete() if onComplete
 
 module.exports = SlackResponse

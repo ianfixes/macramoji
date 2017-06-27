@@ -5,6 +5,7 @@ gm  = require 'gm'
 
 class ImageContainer
   constructor: (@path, @cleanupCallback) ->
+    @cleaned = false
 
   # callback takes (err, imgContainer)
   @fromNewTempFile: (callback) ->
@@ -14,6 +15,10 @@ class ImageContainer
       else
         ret = new ImageContainer(path, cleanupCallback)
         callback(null, ret)
+
+  cleanup: =>
+    @cleanupCallback && !@cleaned && @cleanupCallback()
+    @cleaned = true
 
   # result image size in bytes
   size: ->

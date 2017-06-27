@@ -34,5 +34,5 @@ script:
   - node --version
   - npm --version
   # Run tests
-  - npm test
+  # - npm test # handled by coverage anyway, why duplicate effort
   - npm run coverage
