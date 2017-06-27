@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- `cleanup` now available in multiple classes and it's safe to call it more than once
 
 ### Changed
 

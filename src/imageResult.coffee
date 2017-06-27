@@ -41,7 +41,7 @@ class ImageResult
 
   # call all cleanup functions for images
   cleanup: ->
-    i.cleanupCallback() for i in @allTempImages()
+    i.cleanup() for i in @allTempImages()
 
   # direct line to the image path of a result
   imgPath: ->
