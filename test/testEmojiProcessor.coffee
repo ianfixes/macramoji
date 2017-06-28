@@ -174,7 +174,7 @@ test 'EmojiProcessor', (troot) ->
     t.true(fs.existsSync(container.path), "the temp image #{container.path} should exist")
     t.equal(container.size(), 43, 'we downloaded what we expected')
 
-  verifyFavico = (t, result) ->
+  verifyFavico = (t, result, onComplete) ->
     t.deepEqual(result.errorMessages, [])
     t.equal(result.constructor.name, "ImageResult", "Verify favicos of ImageResults only")
     verifySize(t, result.resultImage)
@@ -184,11 +184,7 @@ test 'EmojiProcessor', (troot) ->
       result.normalDimension (err, dim) ->
         t.fail(err, 'getting normal dimension succeeds') if err
         t.equal(dim, 1, 'dimension is 1')
-
-  verifyDeletion = (t, result) ->
-    result.cleanup()
-    t.false(fs.existsSync(result.imgPath()), 'image should be deleted')
-
+        onComplete() if onComplete
 
   # do end-to-end test
   doe2e = (title, input, checkResult) ->
@@ -196,11 +192,10 @@ test 'EmojiProcessor', (troot) ->
       ep = new EmojiProcessor fakeEmojiStore, fakeMacros
 
       ep.process input, (slackResp) ->
-        checkResult(t, slackResp, ep)
-        #verifyDeletion(t, slackResp.imgResult)
-        t.end()
+        checkResult t, slackResp, ep, () ->
+          t.end()
 
-  doe2e "Can do an end-to-end test with unparseable str", "zzzzz", (t, slackResp, ep) ->
+  doe2e "Can do an end-to-end test with unparseable str", "zzzzz", (t, slackResp, ep, onComplete) ->
     t.equal([
       "I couldn't parse `zzzzz` as macromoji:",
       "```Error: Parse error on line 1:",
@@ -208,27 +203,29 @@ test 'EmojiProcessor', (troot) ->
       "-----^",
       "Expecting '(', got 'EOF'```"
     ].join("\n"), slackResp.message)
+    onComplete()
 
-  doe2e "Can do an end-to-end test with bad funk", "nope(:favico:)", (t, slackResp, ep) ->
+  doe2e "Can do an end-to-end test with bad funk", "nope(:favico:)", (t, slackResp, ep, onComplete) ->
     t.equal("I didn't understand some of `nope(:favico:)`:\n • Unknown function names: nope",slackResp.message)
+    onComplete()
 
-  doe2e "Can do an end-to-end test with bad emoji", "identity(:pooop:)", (t, slackResp, ep) ->
+  doe2e "Can do an end-to-end test with bad emoji", "identity(:pooop:)", (t, slackResp, ep, onComplete) ->
     t.equal("I didn't understand some of `identity(:pooop:)`:\n • Unknown emoji names: pooop",slackResp.message)
+    onComplete()
 
-  doe2e "Can do an end-to-end test with bad funk/emoji", "nope(x(:pooop:, :y:))", (t, slackResp, ep) ->
+  doe2e "Can do an end-to-end test with bad funk/emoji", "nope(x(:pooop:, :y:))", (t, slackResp, ep, onComplete) ->
     t.equal([
       "I didn't understand some of `nope(x(:pooop:, :y:))`:",
       " • Unknown function names: nope, x",
       " • Unknown emoji names: pooop, y"].join("\n"), slackResp.message)
+    onComplete()
 
-  doe2e "Can do an end-to-end test with builtin emoji", "identity(:copyright:)", (t, slackResp, ep) ->
+  doe2e "Can do an end-to-end test with builtin emoji", "identity(:copyright:)", (t, slackResp, ep, onComplete) ->
     t.equal(slackResp.message, null)
     t.true(slackResp.imgResult)
     t.equal(slackResp.imgResult.constructor.name, "ImageResult")
     t.equal("identity-copyright", slackResp.fileDesc)
-    t.equal(slackResp.imgResult.allTempImages().length, 2)
-
-  doe2e "Can do an end-to-end test with good entities", "identity(:favico:)", (t, slackResp, ep) ->
+  doe2e "Can do an end-to-end test with good entities", "identity(:favico:)", (t, slackResp, ep, onComplete) ->
     t.equal(slackResp.message, null)
     t.true(slackResp.imgResult)
     t.equal(slackResp.imgResult.constructor.name, "ImageResult")

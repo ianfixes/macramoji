@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - `SlackResponse.cleanup` now actually calls lower-level cleanup
+- Some tests weren't written with an async pattern when they needed to be
 
 ### Security
 
