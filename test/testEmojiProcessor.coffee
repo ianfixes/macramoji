@@ -20,25 +20,25 @@ allMacros = require '../src/defaultMacros'
 
 test 'EmojiProcessor', (troot) ->
   test 'parser exists', (t) ->
-    ee = new EmojiProcessor({}, undefined)
-    t.ok(ee.parser(), 'parser exists')
+    ep = new EmojiProcessor({}, undefined)
+    t.ok(ep.parser(), 'parser exists')
     t.end()
 
   test 'parser parses positive input', (t) ->
-    ee = new EmojiProcessor({}, undefined)
-    t.equal(ee.parseable(input1), true)
+    ep = new EmojiProcessor({}, undefined)
+    t.equal(ep.parseable(input1), true)
     t.end()
 
   test 'does not parse negative input', (t) ->
     onErr = sinon.spy()
-    ee = new EmojiProcessor({}, undefined)
-    t.equal(ee.parseable(input1 + " crap"), false)
+    ep = new EmojiProcessor({}, undefined)
+    t.equal(ep.parseable(input1 + " crap"), false)
     t.end()
 
   test 'can reduce (tree into array)', (t) ->
-    ee = new EmojiProcessor({}, undefined)
-    parseTree = ee.parse(input1)
-    entities = ee.reduce parseTree, [], (acc, tree) ->
+    ep = new EmojiProcessor({}, undefined)
+    parseTree = ep.parse(input1)
+    entities = ep.reduce parseTree, [], (acc, tree) ->
       acc.concat([
         entity: tree.entity
         name: tree.name
@@ -55,9 +55,9 @@ test 'EmojiProcessor', (troot) ->
 
 
   test 'understands positional arguments and initializes proper vars', (t) ->
-    ee = new EmojiProcessor('foo', 'bar')
-    t.equal(ee.emojiStore, 'foo')
-    t.equal(ee.macros, 'bar')
+    ep = new EmojiProcessor('foo', 'bar')
+    t.equal(ep.emojiStore, 'foo')
+    t.equal(ep.macros, 'bar')
     t.end()
 
   test 'can validate good function entities', (t) ->
@@ -70,8 +70,8 @@ test 'EmojiProcessor', (troot) ->
       { entity: 'funk', name: 'dealwithit' },
     ]
 
-    ee = new EmojiProcessor('foo', funks, 'baz')
-    t.equal(ee.invalidFunkNames(entities).length, 0)
+    ep = new EmojiProcessor('foo', funks, 'baz')
+    t.equal(ep.invalidFunkNames(entities).length, 0)
     t.end()
 
   test 'can validate bad function entities', (t) ->
@@ -85,8 +85,8 @@ test 'EmojiProcessor', (troot) ->
       { entity: 'funk', name: 'dealwithit' },
     ]
 
-    ee = new EmojiProcessor('foo', funks, 'baz')
-    invalidNames = ee.invalidFunkNames(entities)
+    ep = new EmojiProcessor('foo', funks, 'baz')
+    invalidNames = ep.invalidFunkNames(entities)
     t.equal(invalidNames.length, 1)
     t.equal(invalidNames[0], 'bad')
     t.end()
@@ -101,8 +101,8 @@ test 'EmojiProcessor', (troot) ->
       { entity: 'emoji', name: 'glasses' },
     ]
 
-    ee = new EmojiProcessor('foo', 'bar', 'baz')
-    t.equal(ee.invalidEmojiNames(entities, emoji).length, 0)
+    ep = new EmojiProcessor('foo', 'bar', 'baz')
+    t.equal(ep.invalidEmojiNames(entities, emoji).length, 0)
     t.end()
 
 
@@ -117,8 +117,8 @@ test 'EmojiProcessor', (troot) ->
       { entity: 'emoji', name: 'bad' },
     ]
 
-    ee = new EmojiProcessor('foo', 'bar', 'baz')
-    invalidNames = ee.invalidEmojiNames(entities, emoji)
+    ep = new EmojiProcessor('foo', 'bar', 'baz')
+    invalidNames = ep.invalidEmojiNames(entities, emoji)
     t.equal(invalidNames.length, 1)
     t.equal(invalidNames[0], 'bad')
     t.end()
@@ -126,35 +126,35 @@ test 'EmojiProcessor', (troot) ->
   test 'can add good macros', (t) ->
     entities = [{ entity: 'funk', name: 'splosion' }]
 
-    ee = new EmojiProcessor('foo', {}, 'baz')
+    ep = new EmojiProcessor('foo', {}, 'baz')
     # isn't there before
-    invalidNames = ee.invalidFunkNames(entities)
+    invalidNames = ep.invalidFunkNames(entities)
     t.equal(invalidNames.length, 1)
     t.equal(invalidNames[0], 'splosion')
     # add it
-    t.ok(ee.addMacro('splosion', (_) -> ))
+    t.ok(ep.addMacro('splosion', (_) -> ))
     # is there now
-    t.equal(ee.invalidFunkNames(entities).length, 0)
+    t.equal(ep.invalidFunkNames(entities).length, 0)
     t.end()
 
   test "can't add bad macros -- macros lacking a function", (t) ->
     entities = [{ entity: 'funk', name: 'splosion' }]
 
-    ee = new EmojiProcessor('foo', {}, 'baz')
+    ep = new EmojiProcessor('foo', {}, 'baz')
     # isn't there before
-    invalidNames = ee.invalidFunkNames(entities)
+    invalidNames = ep.invalidFunkNames(entities)
     t.equal(invalidNames.length, 1)
     t.equal(invalidNames[0], 'splosion')
     # add it - fails
-    t.notOk(ee.addMacro('splosion', 0))
+    t.notOk(ep.addMacro('splosion', 0))
     # isn't there now
-    t.equal(ee.invalidFunkNames(entities).length, 1)
+    t.equal(ep.invalidFunkNames(entities).length, 1)
     t.end()
 
   test 'can reduce (tree into array)', (t) ->
-    ee = new EmojiProcessor({}, undefined, undefined)
-    parseTree = ee.parse(input1)
-    entities = ee.reduce(parseTree, [], (acc, tree) ->
+    ep = new EmojiProcessor({}, undefined, undefined)
+    parseTree = ep.parse(input1)
+    entities = ep.reduce(parseTree, [], (acc, tree) ->
       acc.concat([
         entity: tree.entity
         name: tree.name
@@ -193,14 +193,14 @@ test 'EmojiProcessor', (troot) ->
   # do end-to-end test
   doe2e = (title, input, checkResult) ->
     ctest title, (t) ->
-      ee = new EmojiProcessor fakeEmojiStore, fakeMacros
+      ep = new EmojiProcessor fakeEmojiStore, fakeMacros
 
-      ee.process input, (slackResp) ->
-        checkResult(t, slackResp, ee)
+      ep.process input, (slackResp) ->
+        checkResult(t, slackResp, ep)
         #verifyDeletion(t, slackResp.imgResult)
         t.end()
 
-  doe2e "Can do an end-to-end test with unparseable str", "zzzzz", (t, slackResp, ee) ->
+  doe2e "Can do an end-to-end test with unparseable str", "zzzzz", (t, slackResp, ep) ->
     t.equal([
       "I couldn't parse `zzzzz` as macromoji:",
       "```Error: Parse error on line 1:",
@@ -209,26 +209,26 @@ test 'EmojiProcessor', (troot) ->
       "Expecting '(', got 'EOF'```"
     ].join("\n"), slackResp.message)
 
-  doe2e "Can do an end-to-end test with bad funk", "nope(:favico:)", (t, slackResp, ee) ->
+  doe2e "Can do an end-to-end test with bad funk", "nope(:favico:)", (t, slackResp, ep) ->
     t.equal("I didn't understand some of `nope(:favico:)`:\n • Unknown function names: nope",slackResp.message)
 
-  doe2e "Can do an end-to-end test with bad emoji", "identity(:pooop:)", (t, slackResp, ee) ->
+  doe2e "Can do an end-to-end test with bad emoji", "identity(:pooop:)", (t, slackResp, ep) ->
     t.equal("I didn't understand some of `identity(:pooop:)`:\n • Unknown emoji names: pooop",slackResp.message)
 
-  doe2e "Can do an end-to-end test with bad funk/emoji", "nope(x(:pooop:, :y:))", (t, slackResp) ->
+  doe2e "Can do an end-to-end test with bad funk/emoji", "nope(x(:pooop:, :y:))", (t, slackResp, ep) ->
     t.equal([
       "I didn't understand some of `nope(x(:pooop:, :y:))`:",
       " • Unknown function names: nope, x",
       " • Unknown emoji names: pooop, y"].join("\n"), slackResp.message)
 
-  doe2e "Can do an end-to-end test with builtin emoji", "identity(:copyright:)", (t, slackResp, ee) ->
+  doe2e "Can do an end-to-end test with builtin emoji", "identity(:copyright:)", (t, slackResp, ep) ->
     t.equal(slackResp.message, null)
     t.true(slackResp.imgResult)
     t.equal(slackResp.imgResult.constructor.name, "ImageResult")
     t.equal("identity-copyright", slackResp.fileDesc)
     t.equal(slackResp.imgResult.allTempImages().length, 2)
 
-  doe2e "Can do an end-to-end test with good entities", "identity(:favico:)", (t, slackResp, ee) ->
+  doe2e "Can do an end-to-end test with good entities", "identity(:favico:)", (t, slackResp, ep) ->
     t.equal(slackResp.message, null)
     t.true(slackResp.imgResult)
     t.equal(slackResp.imgResult.constructor.name, "ImageResult")
