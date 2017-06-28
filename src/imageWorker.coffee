@@ -23,6 +23,14 @@ class ImageWorker
         cb()
     ), callback
 
+  # pull in all temp images from all args
+  cumulativeTempImages: () =>
+    ret = []
+    for a in @resolvedArgs
+      if a instanceof ImageResult
+        ret = ret.concat(a.allTempImages())
+    ret
+
   # tally up the error messages from all args
   errorResult: (otherMessages, otherImages) ->
     tempImages = []

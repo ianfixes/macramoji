@@ -38,6 +38,13 @@ class ImageContainer
       ret[k] = v
     ret
 
+  source: =>
+    if @path of containers
+      containers[@path]
+    else
+      "<non-tmp>"
+
+
   cleanup: =>
     @cleanupCallback && !@cleaned && @cleanupCallback()
     @cleaned = true

@@ -43,6 +43,10 @@ class ImageResult
         onComplete(ret)
     , callerName
 
+  provenance: ->
+    sources = ImageContainer.activeContainers()
+    i.source() for i in @allTempImages()
+
 
   # call all cleanup functions for images
   cleanup: ->
