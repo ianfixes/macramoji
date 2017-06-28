@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "async": "^2.4.1",
+    "caller-id": "^0.1.0",
     "emoji-datasource-apple": "^3.0.0",
     "get-installed-path": "^2.0.3",
     "gm": "^1.23.0",

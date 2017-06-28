@@ -1,27 +1,42 @@
 tmp = require 'tmp'
 fs  = require 'fs'
 gm  = require 'gm'
+path = require 'path'
+callerId = require 'caller-id'
 
-containersExisting = 0
+containers = {}
 
 class ImageContainer
   constructor: (@path, @cleanupCallback) ->
     @cleaned = false
 
   # callback takes (err, imgContainer)
-  @fromNewTempFile: (callback) ->
-    tmp.file { discardDescriptor: true }, (err, path, fd, cleanupCallback) ->
+  @fromNewTempFile: (callback, callerName) ->
+    if !callerName
+      c = callerId.getData()
+      callerName = "#{c.functionName}() #{path.basename(c.filePath)}:#{c.lineNumber}"
+
+    tmp.file { discardDescriptor: true }, (err, newPath, fd, cleanupCallback) ->
       if err
         callback(err)
       else
-        containersExisting = containersExisting + 1
-        ret = new ImageContainer path, () ->
-          containersExisting = containersExisting - 1
+        containers[newPath] = callerName
+        ret = new ImageContainer newPath, () ->
           cleanupCallback()
+          delete containers[newPath]
         callback(null, ret)
 
+  @clearContainerTracker: ->
+    containers = {}
+
   @existingContainerCount: ->
-    containersExisting
+    Object.keys(containers).length
+
+  @activeContainers: ->
+    ret = {}
+    for k, v of containers
+      ret[k] = v
+    ret
 
   cleanup: =>
     @cleanupCallback && !@cleaned && @cleanupCallback()
