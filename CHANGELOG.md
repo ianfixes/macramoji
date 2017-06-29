@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+
+## [0.1.8] - 2017-06-29
+### Added
 - `ImageContainer` now tracks `existingContainerCount` for debugging purposes
 - Instrumentation for testing: `source` and `provenance` for tracking where images come from
 - Logging for the number of temp images that disappeared after a cleanup operation
@@ -14,26 +28,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Centralized temp image roundup
 - ImageWorker uses recursion instead of duplication to track resolved results
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 - `SlackResponse.cleanup` now actually calls lower-level cleanup
 - Some tests weren't written with an async pattern when they needed to be
 - `imageTransform.normalize()` wasn't using callbacks properly and failed to propagate temp images
-
-### Security
-
+- This changelog's links
 
 ## [0.1.7] - 2017-06-27
 ### Added
 - `cleanup` now available in multiple classes and it's safe to call it more than once
 - `respondBeepBoopSlashCommand` in the SlackResponse object
 
+
 ## [0.1.6] - 2017-06-25
 ### Added
 - `EmojiStore` methods to `addEmoji` and `deleteEmoji`, presumably in response to RTM updates
+
 
 ## [0.1.5] - 2017-06-22
 ### Added
@@ -96,14 +106,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - animations are more correctly detected for `splosion`
 
+
 ## 0.1.0 - 2017-06-15
 ### Added
 - The entire initial release, enabling `splosion` and `dealwithit` macros.
 - 2 debug macros `identity` and `identity-gm`
 
-[Unreleased]: https://github.com/ifreecarve/macramoji/compare/v0.1.7...HEAD
-[0.1.6]: https://github.com/ifreecarve/macramoji/compare/v0.1.6...v0.1.7
-[0.1.5]: https://github.com/ifreecarve/macramoji/compare/v0.1.5...v0.1.6
+
+[Unreleased]: https://github.com/ifreecarve/macramoji/compare/v0.1.8...HEAD
+[0.1.8]: https://github.com/ifreecarve/macramoji/compare/v0.1.7...v0.1.8
+[0.1.7]: https://github.com/ifreecarve/macramoji/compare/v0.1.6...v0.1.7
+[0.1.6]: https://github.com/ifreecarve/macramoji/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/ifreecarve/macramoji/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/ifreecarve/macramoji/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/ifreecarve/macramoji/compare/v0.1.2...v0.1.3
