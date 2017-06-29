@@ -10,36 +10,41 @@ class ImageWorker
   # workFn will have to contain a callback that expects an imageResult
   constructor: (@parseDescription, @args, @workFn) ->
     # args are ImageWorker objects
-    # resolvedArgs are ImageResult objects
-    @resolvedArgs = Array(@args.length).fill(null)
+    # normalArgs are ImageResult objects
     @result = null
+    @normalArgs = null
 
   # callback takes err
-  subResolve: (callback) ->
-    async.eachOf @resolvedArgs, ((v, i, cb) =>
-      return cb() if v?
-      @args[i].resolve (result) =>
-        @resolvedArgs[i] = result
+  subResolve: (callback) =>
+    async.eachOf @args, ((v, i, cb) ->
+      return cb() if v.result?
+      v.resolve (result) ->
         cb()
     ), callback
 
   # pull in all temp images from all args
   cumulativeTempImages: () =>
     ret = []
-    for a in @resolvedArgs
-      if a instanceof ImageResult
-        ret = ret.concat(a.allTempImages())
+    for a in @args
+      ret = ret.concat(a.cumulativeTempImages())
+      if a.result instanceof ImageResult
+        ret = ret.concat(a.result.allTempImages())
+
+    if @normalArgs?
+      for a in @normalArgs
+        if a instanceof ImageResult
+          ret = ret.concat(a.allTempImages())
     ret
 
   # tally up the error messages from all args
-  errorResult: (otherMessages, otherImages) ->
-    tempImages = []
+  errorResult: (otherMessages, otherImages) =>
     errorMessages = []
-    for a in @resolvedArgs
-      if a? && a instanceof ImageResult
-        tempImages = tempImages.concat(a.allTempImages())
-        errorMessages = errorMessages.concat(a.errorMessages)
+    for a in @args
+      if a.result? && a.result instanceof ImageResult
+        errorMessages = errorMessages.concat(a.result.errorMessages)
     errorMessages = errorMessages.concat(otherMessages) if otherMessages
+
+    tempImages = @cumulativeTempImages()
     tempImages = tempImages.concat(otherImages) if otherImages
 
     new ImageResult tempImages, errorMessages, null
@@ -55,19 +60,20 @@ class ImageWorker
   isValidImageResult: (something) ->
     (something instanceof ImageResult) && something.isValid()
 
-  argsValid: () ->
-    @resolvedArgs.every (x) =>
-      @isValidImageResult(x)
+  argsValid: () =>
+    @args.every (x) =>
+      @isValidImageResult(x.result)
 
-  # check that all resolvedArgs contain images
+  # check that all args contain images
   # if any args were invalid, bubble up all those error messages
   checkResolvedArgs: (cb) =>
     problems = []
 
-    @resolvedArgs.forEach (a, i) =>
-      if !(a instanceof ImageResult)
-        problems.push "#{@args[i].parseDescription} didn't resolve to an ImageResult"
-      else if !a.isValid()
+    @args.forEach (a, i) =>
+      if !(a.result instanceof ImageResult)
+        aType = a.result && a.result.constructor.name
+        problems.push "#{@args[i].parseDescription} didn't resolve to an ImageResult, got #{aType}"
+      else if !a.result.isValid()
         problems.push "#{@args[i].parseDescription} didn't produce a valid ImageResult"
 
     if problems.length > 0
@@ -84,16 +90,16 @@ class ImageWorker
 
     # convert inputs and outputs for use with async.map.  transform
     #   returns an ImageResult in all cases
-    normFn = (inResult, cb) ->
-      transform.normalize inResult, dimension, (outResult) ->
+    normFn = (inWorker, cb) ->
+      transform.normalize inWorker.result, dimension, (outResult) ->
         return cb(outResult.errorMessages.join("; ")) unless outResult.isValid()
         cb(null, outResult)
 
-    async.map @resolvedArgs, normFn, (err, results) =>
+    async.map @args, normFn, (err, results) =>
       if err
         errRet = @errorResult(["'#{@parseDescription}' normalizeArgs error: #{err}"])
         return callback(errRet)
-      @resolvedArgs = results
+      @normalArgs = results
       callback()
 
   # if work fn doesn't call its callback,
@@ -115,7 +121,7 @@ class ImageWorker
       else
         @errorResult [err], maybeResult.allTempImages()
 
-    paths = @resolvedArgs.map (x) -> x.imgPath()
+    paths = @normalArgs.map (x) -> x.imgPath()
     @workFn paths, (result) =>
       if result == null
         return callback(wrappedErrResult("result is null", null), null)
@@ -127,21 +133,21 @@ class ImageWorker
         else
           return callback(wrappedErrResult("ImageResult has errors: #{result.errorMessages.join('; ')}", result), null)
 
-      # success; add all intermediate images from args
-      for a in @resolvedArgs
-        result.addTempImages(a.allTempImages()) if a? && a instanceof ImageResult
+      # # success; add all intermediate images from args.  wrappedErrResult would have done this otherwise
+      # for a in @resolvedArgs
+      #   result.addTempImages(a.allTempImages()) if a? && a instanceof ImageResult
 
       callback(null, result)
 
 
   # callback takes imageResult.  only imageresults may be returned.
-  resolve: (callback) ->
+  resolve: (callback) =>
     return callback(@result) if @result
 
     # find all normalized (max dimension) image sizes
     # callback returns nothing because we're overwriting in-place
     getNormalDims = (cb) =>
-      dimFns = @resolvedArgs.map (x) -> x.normalDimension
+      dimFns = @args.map (x) -> x.result.normalDimension
       async.parallel dimFns, (err, result) =>
         if err
           cb @errorResult("'#{@parseDescription}' getNormalDims error: #{err}")
@@ -165,6 +171,7 @@ class ImageWorker
           @result = err
         else if result
           @result = result
+        @result.addTempImages(@cumulativeTempImages())
         callback(@result)
     )
 

@@ -189,10 +189,13 @@ test 'EmojiProcessor', (troot) ->
   # do end-to-end test
   doe2e = (title, input, checkResult) ->
     ctest title, (t) ->
-      ep = new EmojiProcessor fakeEmojiStore, fakeMacros
+      ImageContainer.clearContainerTracker()
+      ep = new EmojiProcessor fakeEmojiStore, allMacros
 
       ep.process input, (slackResp) ->
         checkResult t, slackResp, ep, () ->
+          slackResp.cleanup()
+          t.deepEqual(value for own _, value of ImageContainer.activeContainers(), [])
           t.end()
 
   doe2e "Can do an end-to-end test with unparseable str", "zzzzz", (t, slackResp, ep, onComplete) ->
@@ -225,15 +228,40 @@ test 'EmojiProcessor', (troot) ->
     t.true(slackResp.imgResult)
     t.equal(slackResp.imgResult.constructor.name, "ImageResult")
     t.equal("identity-copyright", slackResp.fileDesc)
+    t.equal(ep.lastWorkTree.normalArgs.length, 1)
+    t.equal(ep.lastWorkTree.normalArgs[0].constructor.name, "ImageResult")
+    # t.deepEqual(slackResp.imgResult.provenance(), [])
+    t.equal(slackResp.imgResult.allTempImages().length, 5)
+    onComplete()
+
   doe2e "Can do an end-to-end test with good entities", "identity(:favico:)", (t, slackResp, ep, onComplete) ->
     t.equal(slackResp.message, null)
     t.true(slackResp.imgResult)
     t.equal(slackResp.imgResult.constructor.name, "ImageResult")
     t.equal("identity-favico", slackResp.fileDesc)
-    emojiResult = ee.workTree.resolvedArgs[0]
-    verifyFavico(t, emojiResult)
-    verifyFavico(t, ee.workTree.result)
-    verifyFavico(t, slackResp.imgResult)  # same as prev line
-    t.equal(slackResp.imgResult.allTempImages().length, 2)
+    #emojiResult = ep.lastWorkTree.resolvedArgs[0]
+    t.equal(ep.lastWorkTree.parseDescription, "identity(:favico:)")
+    t.equal(ep.lastWorkTree.args.length, 1)
+    favicoProvenance = ep.lastWorkTree.args[0].result.provenance()[0]
+    t.notEqual(slackResp.imgResult.provenance().indexOf(favicoProvenance), -1,
+      "provenance of downloaded image should be part of identity function provenance")
+    t.equal(slackResp.imgResult.allTempImages().length, 5)
+    #t.deepEqual(value for own _, value of ImageContainer.activeContainers(), [])
+    #verifyFavico(t, emojiResult)
+    #verifyFavico(t, ep.workTree.result)
+    verifyFavico(t, slackResp.imgResult, onComplete)  # same as prev line
+
+  doe2e "Can do an end-to-end test with nesting", "identity_gm(identity_gm(:favico:), :favico:)", (t, slackResp, ep, onComplete) ->
+    t.equal(slackResp.message, null)
+    t.true(slackResp.imgResult)
+    t.equal(slackResp.imgResult.constructor.name, "ImageResult")
+    t.equal("identity_gm-identity_gm-favico-favico", slackResp.fileDesc)
+    #emojiResult = ep.lastWorkTree.resolvedArgs[0]
+    #t.deepEqual(slackResp.imgResult.provenance(), [])
+    t.equal(slackResp.imgResult.allTempImages().length, 21)
+    #t.deepEqual(value for own _, value of ImageContainer.activeContainers(), [])
+    #verifyFavico(t, emojiResult)
+    #verifyFavico(t, ep.workTree.result)
+    verifyFavico(t, slackResp.imgResult, onComplete)  # same as prev line
 
   troot.end()

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Centralized temp image roundup
+- ImageWorker uses recursion instead of duplication to track resolved results
 
 ### Deprecated
 
