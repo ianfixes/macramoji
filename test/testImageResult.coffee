@@ -42,14 +42,17 @@ test 'ImageResult', (troot) ->
     ir1 = new ImageResult
     t.equal(ir1.resultImage, null, "resultImage starts null")
     t.false(ir1.isValid(), "null images aren't valid")
+    t.equal(ir1.allTempImages().length, 0)
     ir1.addResult(ic1)
     t.true(ir1.isValid(), "non-null images are valid")
     t.equal(ir1.imgPath(), "foo")
     t.equal(ir1.intermediateImages.length, 0, "result image not in temp array")
+    t.equal(ir1.allTempImages().length, 1)
     ir1.addResult(ic2)
     t.true(ir1.isValid(), "another image is valid too")
     t.equal(ir1.intermediateImages.length, 1, "old result now temp")
     t.equal(ir1.intermediateImages[0].path, "foo", "old result matches temp[0]")
+    t.equal(ir1.allTempImages().length, 2)
     t.end()
 
   test 'does cleanup', (t) ->
@@ -59,19 +62,6 @@ test 'ImageResult', (troot) ->
     ir1 = new ImageResult
     ir1.addResult ic3
     ir1.cleanup()
-
-  # test 'supercedes', (t) ->
-  #   ir1 = new ImageResult
-  #   msg = "abc"
-  #   ir1.errorMessages.push(msg)
-  #   t.deepEqual(ir1.errorMessages, [msg])
-  #   t.equal(ir1.imgPath(), null)
-  #   ir1.intermediateImages.push(ic1)
-  #   ir2 = ir1.supercede()
-  #   t.equal(ir2.intermediateImages.length, 1)
-  #   t.equal(ir2.intermediateImages[0].path, ic1.path)
-  #   t.deepEqual(ir1.errorMessages, ir2.errorMessages)
-  #   t.end()
 
   troot.end()
 

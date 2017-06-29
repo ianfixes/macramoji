@@ -33,4 +33,14 @@ test 'ImageContainer', (troot) ->
     t.equal(count, 1, "cleanup callback hasn't been called twice")
     t.end()
 
+  test "track number of containers", (t) ->
+    baseCount = ImageContainer.existingContainerCount()
+    ImageContainer.fromNewTempFile (err, ic1) ->
+      t.equal(ImageContainer.existingContainerCount(), baseCount + 1)
+      ic1.cleanup()
+      t.equal(ImageContainer.existingContainerCount(), baseCount)
+      ic1.cleanup()
+      t.equal(ImageContainer.existingContainerCount(), baseCount)
+      t.end()
+
   troot.end()

@@ -1,5 +1,4 @@
 fs = require 'fs'
-tmp = require 'tmp'
 http = require 'http'
 https = require 'https'
 urllib = require 'url'
@@ -104,8 +103,8 @@ class EmojiStore
   workFnUrl: (desired) ->
     url = @urls[desired]
     # callback takes error or null
-    initImageResultByDownloading = (path, callback) =>
-      @download url, path, (err) ->
+    initImageResultByDownloading = (newPath, callback) =>
+      @download url, newPath, (err) ->
         callback(err)
 
     # onComplete takes an ImageResult

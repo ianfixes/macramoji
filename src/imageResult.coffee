@@ -1,5 +1,7 @@
 fs  = require 'fs'
 gm  = require 'gm'
+path = require 'path'
+callerId = require 'caller-id'
 
 ImageContainer = require './imageContainer'
 
@@ -22,8 +24,10 @@ class ImageResult
   # initFn takes (path, cb) where cb is (err)
   # onComplete takes (imgResult)
   @initFromNewTempFile: (initFn, onComplete) ->
-    ret = new ImageResult
+    c = callerId.getData()
+    callerName = "#{c.functionName}() #{path.basename(c.filePath)}:#{c.lineNumber} via ImageResult.initFromNewTempFile"
 
+    ret = new ImageResult
     ImageContainer.fromNewTempFile (err, imgContainer) ->
       if err
         ret.addErrors [err]
@@ -37,11 +41,19 @@ class ImageResult
 
         ret.addResult imgContainer
         onComplete(ret)
+    , callerName
+
+  provenance: ->
+    sources = ImageContainer.activeContainers()
+    i.source() for i in @allTempImages()
 
 
   # call all cleanup functions for images
   cleanup: ->
+    before = ImageContainer.existingContainerCount()
     i.cleanup() for i in @allTempImages()
+    numDeleted = before - ImageContainer.existingContainerCount()
+    console.log("Cleanup appears to have deleted #{numDeleted} temp images")
 
   # direct line to the image path of a result
   imgPath: ->

@@ -16,34 +16,29 @@ emojiFetchFn = (cb) ->
     favico: 'http://tinylittlelife.org/favicon.ico'
 fakeEmojiStore = new EmojiStore(emojiFetchFn, 0)
 
-fakeMacros =
-  identity: (args, onComplete) ->
-    initFn = (path, cb) ->
-      fs.writeFileSync(path, fs.readFileSync(args[0]))
-      cb()
-    ImageResult.initFromNewTempFile initFn, onComplete
+allMacros = require '../src/defaultMacros'
 
 test 'EmojiProcessor', (troot) ->
   test 'parser exists', (t) ->
-    ee = new EmojiProcessor({}, undefined)
-    t.ok(ee.parser(), 'parser exists')
+    ep = new EmojiProcessor({}, undefined)
+    t.ok(ep.parser(), 'parser exists')
     t.end()
 
   test 'parser parses positive input', (t) ->
-    ee = new EmojiProcessor({}, undefined)
-    t.equal(ee.parseable(input1), true)
+    ep = new EmojiProcessor({}, undefined)
+    t.equal(ep.parseable(input1), true)
     t.end()
 
   test 'does not parse negative input', (t) ->
     onErr = sinon.spy()
-    ee = new EmojiProcessor({}, undefined)
-    t.equal(ee.parseable(input1 + " crap"), false)
+    ep = new EmojiProcessor({}, undefined)
+    t.equal(ep.parseable(input1 + " crap"), false)
     t.end()
 
   test 'can reduce (tree into array)', (t) ->
-    ee = new EmojiProcessor({}, undefined)
-    parseTree = ee.parse(input1)
-    entities = ee.reduce parseTree, [], (acc, tree) ->
+    ep = new EmojiProcessor({}, undefined)
+    parseTree = ep.parse(input1)
+    entities = ep.reduce parseTree, [], (acc, tree) ->
       acc.concat([
         entity: tree.entity
         name: tree.name
@@ -60,9 +55,9 @@ test 'EmojiProcessor', (troot) ->
 
 
   test 'understands positional arguments and initializes proper vars', (t) ->
-    ee = new EmojiProcessor('foo', 'bar')
-    t.equal(ee.emojiStore, 'foo')
-    t.equal(ee.macros, 'bar')
+    ep = new EmojiProcessor('foo', 'bar')
+    t.equal(ep.emojiStore, 'foo')
+    t.equal(ep.macros, 'bar')
     t.end()
 
   test 'can validate good function entities', (t) ->
@@ -75,8 +70,8 @@ test 'EmojiProcessor', (troot) ->
       { entity: 'funk', name: 'dealwithit' },
     ]
 
-    ee = new EmojiProcessor('foo', funks, 'baz')
-    t.equal(ee.invalidFunkNames(entities).length, 0)
+    ep = new EmojiProcessor('foo', funks, 'baz')
+    t.equal(ep.invalidFunkNames(entities).length, 0)
     t.end()
 
   test 'can validate bad function entities', (t) ->
@@ -90,8 +85,8 @@ test 'EmojiProcessor', (troot) ->
       { entity: 'funk', name: 'dealwithit' },
     ]
 
-    ee = new EmojiProcessor('foo', funks, 'baz')
-    invalidNames = ee.invalidFunkNames(entities)
+    ep = new EmojiProcessor('foo', funks, 'baz')
+    invalidNames = ep.invalidFunkNames(entities)
     t.equal(invalidNames.length, 1)
     t.equal(invalidNames[0], 'bad')
     t.end()
@@ -106,8 +101,8 @@ test 'EmojiProcessor', (troot) ->
       { entity: 'emoji', name: 'glasses' },
     ]
 
-    ee = new EmojiProcessor('foo', 'bar', 'baz')
-    t.equal(ee.invalidEmojiNames(entities, emoji).length, 0)
+    ep = new EmojiProcessor('foo', 'bar', 'baz')
+    t.equal(ep.invalidEmojiNames(entities, emoji).length, 0)
     t.end()
 
 
@@ -122,8 +117,8 @@ test 'EmojiProcessor', (troot) ->
       { entity: 'emoji', name: 'bad' },
     ]
 
-    ee = new EmojiProcessor('foo', 'bar', 'baz')
-    invalidNames = ee.invalidEmojiNames(entities, emoji)
+    ep = new EmojiProcessor('foo', 'bar', 'baz')
+    invalidNames = ep.invalidEmojiNames(entities, emoji)
     t.equal(invalidNames.length, 1)
     t.equal(invalidNames[0], 'bad')
     t.end()
@@ -131,35 +126,35 @@ test 'EmojiProcessor', (troot) ->
   test 'can add good macros', (t) ->
     entities = [{ entity: 'funk', name: 'splosion' }]
 
-    ee = new EmojiProcessor('foo', {}, 'baz')
+    ep = new EmojiProcessor('foo', {}, 'baz')
     # isn't there before
-    invalidNames = ee.invalidFunkNames(entities)
+    invalidNames = ep.invalidFunkNames(entities)
     t.equal(invalidNames.length, 1)
     t.equal(invalidNames[0], 'splosion')
     # add it
-    t.ok(ee.addMacro('splosion', (_) -> ))
+    t.ok(ep.addMacro('splosion', (_) -> ))
     # is there now
-    t.equal(ee.invalidFunkNames(entities).length, 0)
+    t.equal(ep.invalidFunkNames(entities).length, 0)
     t.end()
 
   test "can't add bad macros -- macros lacking a function", (t) ->
     entities = [{ entity: 'funk', name: 'splosion' }]
 
-    ee = new EmojiProcessor('foo', {}, 'baz')
+    ep = new EmojiProcessor('foo', {}, 'baz')
     # isn't there before
-    invalidNames = ee.invalidFunkNames(entities)
+    invalidNames = ep.invalidFunkNames(entities)
     t.equal(invalidNames.length, 1)
     t.equal(invalidNames[0], 'splosion')
     # add it - fails
-    t.notOk(ee.addMacro('splosion', 0))
+    t.notOk(ep.addMacro('splosion', 0))
     # isn't there now
-    t.equal(ee.invalidFunkNames(entities).length, 1)
+    t.equal(ep.invalidFunkNames(entities).length, 1)
     t.end()
 
   test 'can reduce (tree into array)', (t) ->
-    ee = new EmojiProcessor({}, undefined, undefined)
-    parseTree = ee.parse(input1)
-    entities = ee.reduce(parseTree, [], (acc, tree) ->
+    ep = new EmojiProcessor({}, undefined, undefined)
+    parseTree = ep.parse(input1)
+    entities = ep.reduce(parseTree, [], (acc, tree) ->
       acc.concat([
         entity: tree.entity
         name: tree.name
@@ -179,7 +174,7 @@ test 'EmojiProcessor', (troot) ->
     t.true(fs.existsSync(container.path), "the temp image #{container.path} should exist")
     t.equal(container.size(), 43, 'we downloaded what we expected')
 
-  verifyFavico = (t, result) ->
+  verifyFavico = (t, result, onComplete) ->
     t.deepEqual(result.errorMessages, [])
     t.equal(result.constructor.name, "ImageResult", "Verify favicos of ImageResults only")
     verifySize(t, result.resultImage)
@@ -189,23 +184,21 @@ test 'EmojiProcessor', (troot) ->
       result.normalDimension (err, dim) ->
         t.fail(err, 'getting normal dimension succeeds') if err
         t.equal(dim, 1, 'dimension is 1')
-
-  verifyDeletion = (t, result) ->
-    result.cleanup()
-    t.false(fs.existsSync(result.imgPath()), 'image should be deleted')
-
+        onComplete() if onComplete
 
   # do end-to-end test
   doe2e = (title, input, checkResult) ->
     ctest title, (t) ->
-      ee = new EmojiProcessor fakeEmojiStore, fakeMacros
+      ImageContainer.clearContainerTracker()
+      ep = new EmojiProcessor fakeEmojiStore, allMacros
 
-      ee.process input, (slackResp) ->
-        checkResult(t, slackResp, ee)
-        #verifyDeletion(t, slackResp.imgResult)
-        t.end()
+      ep.process input, (slackResp) ->
+        checkResult t, slackResp, ep, () ->
+          slackResp.cleanup()
+          t.deepEqual(value for own _, value of ImageContainer.activeContainers(), [])
+          t.end()
 
-  doe2e "Can do an end-to-end test with unparseable str", "zzzzz", (t, slackResp, ee) ->
+  doe2e "Can do an end-to-end test with unparseable str", "zzzzz", (t, slackResp, ep, onComplete) ->
     t.equal([
       "I couldn't parse `zzzzz` as macromoji:",
       "```Error: Parse error on line 1:",
@@ -213,35 +206,62 @@ test 'EmojiProcessor', (troot) ->
       "-----^",
       "Expecting '(', got 'EOF'```"
     ].join("\n"), slackResp.message)
+    onComplete()
 
-  doe2e "Can do an end-to-end test with bad funk", "nope(:favico:)", (t, slackResp, ee) ->
+  doe2e "Can do an end-to-end test with bad funk", "nope(:favico:)", (t, slackResp, ep, onComplete) ->
     t.equal("I didn't understand some of `nope(:favico:)`:\n • Unknown function names: nope",slackResp.message)
+    onComplete()
 
-  doe2e "Can do an end-to-end test with bad emoji", "identity(:pooop:)", (t, slackResp, ee) ->
+  doe2e "Can do an end-to-end test with bad emoji", "identity(:pooop:)", (t, slackResp, ep, onComplete) ->
     t.equal("I didn't understand some of `identity(:pooop:)`:\n • Unknown emoji names: pooop",slackResp.message)
+    onComplete()
 
-  doe2e "Can do an end-to-end test with bad funk/emoji", "nope(x(:pooop:, :y:))", (t, slackResp) ->
+  doe2e "Can do an end-to-end test with bad funk/emoji", "nope(x(:pooop:, :y:))", (t, slackResp, ep, onComplete) ->
     t.equal([
       "I didn't understand some of `nope(x(:pooop:, :y:))`:",
       " • Unknown function names: nope, x",
       " • Unknown emoji names: pooop, y"].join("\n"), slackResp.message)
+    onComplete()
 
-  doe2e "Can do an end-to-end test with builtin emoji", "identity(:copyright:)", (t, slackResp, ee) ->
+  doe2e "Can do an end-to-end test with builtin emoji", "identity(:copyright:)", (t, slackResp, ep, onComplete) ->
     t.equal(slackResp.message, null)
     t.true(slackResp.imgResult)
     t.equal(slackResp.imgResult.constructor.name, "ImageResult")
     t.equal("identity-copyright", slackResp.fileDesc)
-    t.equal(slackResp.imgResult.allTempImages().length, 2)
+    t.equal(ep.lastWorkTree.normalArgs.length, 1)
+    t.equal(ep.lastWorkTree.normalArgs[0].constructor.name, "ImageResult")
+    # t.deepEqual(slackResp.imgResult.provenance(), [])
+    t.equal(slackResp.imgResult.allTempImages().length, 5)
+    onComplete()
 
-  doe2e "Can do an end-to-end test with good entities", "identity(:favico:)", (t, slackResp, ee) ->
+  doe2e "Can do an end-to-end test with good entities", "identity(:favico:)", (t, slackResp, ep, onComplete) ->
     t.equal(slackResp.message, null)
     t.true(slackResp.imgResult)
     t.equal(slackResp.imgResult.constructor.name, "ImageResult")
     t.equal("identity-favico", slackResp.fileDesc)
-    emojiResult = ee.workTree.resolvedArgs[0]
-    verifyFavico(t, emojiResult)
-    verifyFavico(t, ee.workTree.result)
-    verifyFavico(t, slackResp.imgResult)  # same as prev line
-    t.equal(slackResp.imgResult.allTempImages().length, 2)
+    #emojiResult = ep.lastWorkTree.resolvedArgs[0]
+    t.equal(ep.lastWorkTree.parseDescription, "identity(:favico:)")
+    t.equal(ep.lastWorkTree.args.length, 1)
+    favicoProvenance = ep.lastWorkTree.args[0].result.provenance()[0]
+    t.notEqual(slackResp.imgResult.provenance().indexOf(favicoProvenance), -1,
+      "provenance of downloaded image should be part of identity function provenance")
+    t.equal(slackResp.imgResult.allTempImages().length, 5)
+    #t.deepEqual(value for own _, value of ImageContainer.activeContainers(), [])
+    #verifyFavico(t, emojiResult)
+    #verifyFavico(t, ep.workTree.result)
+    verifyFavico(t, slackResp.imgResult, onComplete)  # same as prev line
+
+  doe2e "Can do an end-to-end test with nesting", "identity_gm(identity_gm(:favico:), :favico:)", (t, slackResp, ep, onComplete) ->
+    t.equal(slackResp.message, null)
+    t.true(slackResp.imgResult)
+    t.equal(slackResp.imgResult.constructor.name, "ImageResult")
+    t.equal("identity_gm-identity_gm-favico-favico", slackResp.fileDesc)
+    #emojiResult = ep.lastWorkTree.resolvedArgs[0]
+    #t.deepEqual(slackResp.imgResult.provenance(), [])
+    t.equal(slackResp.imgResult.allTempImages().length, 21)
+    #t.deepEqual(value for own _, value of ImageContainer.activeContainers(), [])
+    #verifyFavico(t, emojiResult)
+    #verifyFavico(t, ep.workTree.result)
+    verifyFavico(t, slackResp.imgResult, onComplete)  # same as prev line
 
   troot.end()

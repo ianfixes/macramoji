@@ -6,6 +6,7 @@ SlackResponse = require './slackResponse'
 class EmojiProcessor
   # emoji is an EmojiStore
   constructor: (@emojiStore, @macros) ->
+    @lastWorkTree = null  # for testing, probably not thread safe
 
   parser: ->
     emojiParser
@@ -95,8 +96,9 @@ class EmojiProcessor
       ret.setMessage "I didn't understand some of `#{emojiStr}`:#{probList}"
       return onComplete(ret)
 
-    @workTree = @prepare(parseTree)
-    @workTree.resolve (imgResult) ->
+    workTree = @prepare(parseTree)
+    workTree.resolve (imgResult) =>
+      @lastWorkTree = workTree
       if imgResult.isValid()
         ret.setUpload(imgResult, unparser.unparseEnglish(parseTree))
       else

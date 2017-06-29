@@ -17,20 +17,19 @@ resultFromGM = (inputGm, workFn, cb, format) ->
   ImageResult.initFromNewTempFile initFn, cb
 
 # this one is special because other transforms may need it
-# cb takes err, result
+# cb takes ImageResult
 normalize = (inImageResult, boxSize, cb) ->
   # path, imageresult, callback, input-graphics-magick
   workFn = (inputGm) ->
     inputGm.in("-coalesce")
-  resultFromGM imageMagick(inImageResult.imgPath()), workFn, (err, outResult) ->
-    return cb(err) if err
-    outResult.addTempImages(inImageResult.allTempImages()) if outResult
+  resultFromGM imageMagick(inImageResult.imgPath()), workFn, (outResult) ->
+    outResult.addTempImages(inImageResult.allTempImages())
+    return cb(outResult) unless outResult.isValid()
     work2 = (inputGm2) ->
-      inputGm.in("-resize", "#{boxSize}x#{boxSize}")
-    resultFromGM imageMagick(outResult.imgPath()), workFn, (err2, outResult2) ->
-      return cb(err2) if err2
-      outResult2.addTempImages(outResult.allTempImages()) if outResult2
-      cb(null, outResult2)
+      inputGm2.in("-resize", "#{boxSize}x#{boxSize}")
+    resultFromGM imageMagick(outResult.imgPath()), work2, (outResult2) ->
+      outResult2.addTempImages(outResult.allTempImages())
+      cb(outResult2)
 
 module.exports =
   normalize: normalize

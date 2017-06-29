@@ -10,7 +10,7 @@ class SlackResponse
     @fileName = null
     @fileDesc = null
 
-  cleanup: ->
+  cleanup: =>
     @imgResult && @imgResult.cleanup()
 
   setMessage: (msg) ->
