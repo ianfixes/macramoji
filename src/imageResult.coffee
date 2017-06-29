@@ -50,7 +50,10 @@ class ImageResult
 
   # call all cleanup functions for images
   cleanup: ->
+    before = ImageContainer.existingContainerCount()
     i.cleanup() for i in @allTempImages()
+    numDeleted = before - ImageContainer.existingContainerCount()
+    console.log("Cleanup appears to have deleted #{numDeleted} temp images")
 
   # direct line to the image path of a result
   imgPath: ->

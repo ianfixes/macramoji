@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - `ImageContainer` now tracks `existingContainerCount` for debugging purposes
 - Instrumentation for testing: `source` and `provenance` for tracking where images come from
+- Logging for the number of temp images that disappeared after a cleanup operation
 
 ### Changed
 - Centralized temp image roundup
