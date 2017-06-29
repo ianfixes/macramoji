@@ -10,7 +10,6 @@ test 'SlackResponse', (troot) ->
     sr = new SlackResponse
     t.equal(sr.message, null)
     t.equal(sr.imgResult, null)
-    t.equal(sr.fileName, null)
     t.equal(sr.fileDesc, null)
     t.end()
 
