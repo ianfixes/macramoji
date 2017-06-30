@@ -7,7 +7,6 @@ class SlackResponse
   constructor: () ->
     @message = null
     @imgResult = null
-    @fileName = null
     @fileDesc = null
 
   cleanup: =>
