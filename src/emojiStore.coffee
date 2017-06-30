@@ -77,12 +77,16 @@ class EmojiStore
         @urls[name] = emojiUrls[data.alias]
 
   download: (srcUrl, dest, cb) ->
-    file = fs.createWriteStream(dest)
+    totalSize = 0
+    fileStream = fs.createWriteStream(dest)
     ht = if urllib.parse(srcUrl).protocol == "https:" then https else http
     request = ht.get(srcUrl, (response) ->
-      response.pipe(file)
-      file.on 'finish', () ->
-        file.close(cb);  # close() is async, call cb after close completes.
+      fileStream.on 'data', (chunk) ->
+        totalSize += chunk.length
+      fileStream.on 'finish', () ->
+        console.log("Downloaded #{totalSize} bytes from #{srcUrl}")
+        fileStream.close(cb);  # close() is async, call cb after close completes.
+      response.pipe(fileStream)
     ).on('error', (err) ->
       cb(err.message)
     )
