@@ -83,8 +83,7 @@ class EmojiStore
       response.pipe(file)
       file.on 'finish', () ->
         file.close(cb);  # close() is async, call cb after close completes.
-    ).on('error', (err) -> # Handle errors
-      # fs.unlink dest  # Delete the file async. (But we don't check the result)
+    ).on('error', (err) ->
       cb(err.message)
     )
 
