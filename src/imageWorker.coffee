@@ -81,11 +81,11 @@ class ImageWorker
     else
       cb()
 
-  # normalize to min of max dimension, modifies @resolvedArgs in-place
-  # wrapper for normalization
+  # normalize to min of max dimension by wrapping an image transform function
   # callback takes (err)
   normalizeArgs: (dimensions, callback) =>
     dimension = Math.min.apply(null, dimensions)
+    console.log("Normalizing images to #{dimension} from #{JSON.stringify(dimensions)}")
     # TODO: skip this if all things are already the same size
 
     # convert inputs and outputs for use with async.map.  transform
