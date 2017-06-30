@@ -6,8 +6,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- Complete end-to-end image generation artifact tests
-- More logging for resultFromGM failures
 
 ### Changed
 
@@ -18,6 +16,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 ### Security
+
+
+## [0.1.9] - 2017-06-29
+### Added
+- Complete end-to-end image generation artifact tests
+- More logging for resultFromGM failures
 
 
 ## [0.1.8] - 2017-06-29
@@ -115,7 +119,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - 2 debug macros `identity` and `identity-gm`
 
 
-[Unreleased]: https://github.com/ifreecarve/macramoji/compare/v0.1.8...HEAD
+[Unreleased]: https://github.com/ifreecarve/macramoji/compare/v0.1.9...HEAD
+[0.1.9]: https://github.com/ifreecarve/macramoji/compare/v0.1.8...v0.1.9
 [0.1.8]: https://github.com/ifreecarve/macramoji/compare/v0.1.7...v0.1.8
 [0.1.7]: https://github.com/ifreecarve/macramoji/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/ifreecarve/macramoji/compare/v0.1.5...v0.1.6
