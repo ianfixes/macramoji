@@ -10,7 +10,7 @@ resultFromGM = (inputGm, workFn, cb, format) ->
   initFn = (rawPath, cb2) ->
     newPath = if format then "#{format}:#{rawPath}" else rawPath
     tempGm = workFn(inputGm)  # assign to a temp variable so we can log args prior to writing
-    console.log("GM command: #{tempGm.args()}")
+    console.log("GM command: #{tempGm.args()} >> #{newPath}")
     tempGm.write newPath, (err, result) ->
       console.log "resultFromGM err writing #{newPath}: #{err}" if err
       cb2(err, result)
