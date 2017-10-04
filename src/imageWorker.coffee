@@ -84,6 +84,12 @@ class ImageWorker
   # normalize to min of max dimension by wrapping an image transform function
   # callback takes (err)
   normalizeArgs: (dimensions, callback) =>
+    # early exit for empty array.
+    #   we'd like to early exit for dimensions too but it's not clear how to
+    #   properly handle the lack of normalArgs for that case.
+    if @args.length == 0
+      @normalArgs = []
+      return callback()
     dimension = Math.min.apply(null, dimensions)
     console.log("Normalizing images to #{dimension} from #{JSON.stringify(dimensions)}")
     # TODO: skip this if all things are already the same size
