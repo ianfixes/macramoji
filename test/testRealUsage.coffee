@@ -82,8 +82,8 @@ test "Real uses", (troot) ->
   testInput "dealwithit(:rage1:, :kamina:)", ".gif"
   testInput "dealwithit(:rage1_id:, :kamina:)", ".gif"
   testInput "dealwithit(dealwithit(:rage1_id:), :kamina:)", ".gif"
-  testInput "dealwithit(dealwithit(:rage1_id:, :kamina:))", ".gif"
   testInput "dealwithit(dealwithit(:poop:), :kamina:)", ".gif"
+  testInput "dealwithit(dealwithit(:rage1_id:, :kamina:))", ".gif"
   testInput "dealwithit(dealwithit(:pineapple:), :kamina:)", ".gif"
   testInput "splosion(:rage1:)", ".gif"
   testInput "splosion(:rage1_id:)", ".gif"
@@ -98,6 +98,8 @@ test "Real uses", (troot) ->
   testInput "identity(:muscle:)", ".gif"
   for num in [1..6]
     do (num) -> testInput "skintone_#{num}(:muscle:)", ".png"
+  for num in [1..6]
+    do (num) -> testInput "skintone_#{num}(:rage1:)", ".png"
 
   # generate HTML report from all those outputs
   test "creates report", (t) ->
