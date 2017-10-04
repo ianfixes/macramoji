@@ -51,7 +51,7 @@ splosion = (paths, cb) ->
   getImgInfo paths[0], (err, info) ->
     realInput = if info.isAnimated then [paths[0]] else ["-delay", "100", paths[0]]
     workFn = (inputGm) ->
-      # gm has functions for all of these, and it applies them in a different order
+      # node's gm lib has functions for all of these, and it applies them in a different order
       # which is incorrect and honestly kind of infuriating.  so we manually work around.
       [
         ["-dispose", "Previous"],
