@@ -91,8 +91,14 @@ class ImageResult
     return cb("Can't get normalDimension of null resultImage") unless @isValid()
     @resultImage.normalDimension cb
 
+  addTempImage: (imageContainer) ->
+    @intermediateImages.push(imageContainer)
+
   addTempImages: (imageContainers) ->
-    imageContainers.forEach (v) => @intermediateImages.push(v)
+    imageContainers.forEach (v) => @addTempImage(v)
+
+  mergeTempImages: (imageResult) =>
+    @addTempImages(imageResult.allTempImages())
 
   addErrors: (errorMessages) ->
     errorMessages.forEach (v) => @errorMessages.push(v)
