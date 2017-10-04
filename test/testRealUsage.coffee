@@ -49,6 +49,7 @@ test "Real uses", (troot) ->
   # keep a list of outputs we've made
   createArtifact = (inputPath, filename) ->
     outputPath = outPath(filename)
+    console.log("Saving #{inputPath} to #{outputPath}")
     fs.createReadStream(inputPath).pipe(fs.createWriteStream(outputPath))
     artifacts.push
       name: fileNoExt(filename)
@@ -65,7 +66,7 @@ test "Real uses", (troot) ->
         t.ok(slackResp.imgResult, "image result exists")
         t.ok(slackResp.imgResult.imgPath(), "image result path exists")
         t.ok(slackResp.fileDesc, "fileDesc exists")
-        createArtifact(slackResp.imgResult.imgPath(), slackResp.fileDesc)
+        createArtifact(slackResp.imgResult.imgPath(), slackResp.fileDesc + outputSuffix)
         #slackResp.cleanup()
         #t.deepEqual(value for own _, value of ImageContainer.activeContainers(), [])
         t.end()
