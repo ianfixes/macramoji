@@ -18,19 +18,27 @@ resultFromGM = (inputGm, workFn, cb, format) ->
 
 # this one is special because other transforms may need it
 # cb takes ImageResult
-normalize = (inImageResult, boxSize, cb) ->
+normalizePath = (inPath, boxSize, cb) ->
   # path, imageresult, callback, input-graphics-magick
   workFn = (inputGm) ->
-    inputGm.in("-coalesce")
-  resultFromGM imageMagick(inImageResult.imgPath()), workFn, (outResult) ->
-    outResult.addTempImages(inImageResult.allTempImages())
+    inputGm.in("-background", "none").in("-alpha", "on").in("-coalesce")
+  resultFromGM imageMagick(inPath), workFn, (outResult) ->
     return cb(outResult) unless outResult.isValid()
     work2 = (inputGm2) ->
       inputGm2.in("-resize", "#{boxSize}x#{boxSize}")
-    resultFromGM imageMagick(outResult.imgPath()), work2, (outResult2) ->
+    cb2 = (outResult2) ->
       outResult2.addTempImages(outResult.allTempImages())
       cb(outResult2)
+    resultFromGM imageMagick(outResult.imgPath()), work2, cb2
+
+# normalize an ImageResult
+# cb takes ImageResult
+normalize = (inImageResult, boxSize, cb) ->
+  normalizePath inImageResult.imgPath(), boxSize, (outResult) ->
+    outResult.addTempImages(inImageResult.allTempImages())
+    cb(outResult)
 
 module.exports =
+  normalizePath: normalizePath
   normalize: normalize
   resultFromGM: resultFromGM
