@@ -18,6 +18,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Security
 
 
+## [0.2.1] - 2017-10-05
+### Added
+ - Early exit when there aren't any images to normalize
+ - Entry points for adding individual temp `ImageContainer`s and `ImageResult`s to an `ImageResult`
+ - Extra logging of output paths for ease of debugging
+ - Normalize an image by path in addition to by `ImageResult`
+ - More image-based tests
+ - A way to mock temp image creation using `process.env.MACRAMOJI_DEBUG_TMP`
+
+### Changed
+ - Step-size and frame delay are now dynamic for `dealwithit`, so the observed speed of the glasses does not change in regard to input image size
+
+### Fixed
+ - Normalization operations no longer add a solid background to transparent animated gifs
+ - Filenames in HTML reports of images now have extensions
+
 ## [0.1.10] - 2017-06-30
 ### Added
 - Logging, to aid in troubleshooting
@@ -123,7 +139,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - 2 debug macros `identity` and `identity-gm`
 
 
-[Unreleased]: https://github.com/ifreecarve/macramoji/compare/v0.1.10...HEAD
+[Unreleased]: https://github.com/ifreecarve/macramoji/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/ifreecarve/macramoji/compare/v0.1.10...v0.2.1
 [0.1.10]: https://github.com/ifreecarve/macramoji/compare/v0.1.9...v0.1.10
 [0.1.9]: https://github.com/ifreecarve/macramoji/compare/v0.1.8...v0.1.9
 [0.1.8]: https://github.com/ifreecarve/macramoji/compare/v0.1.7...v0.1.8

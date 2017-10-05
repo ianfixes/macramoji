@@ -19,6 +19,16 @@ Be prepared to write tests to accompany any code you would like to see merged.
 
 A very trivial parser extracts the emoji and macro names, creating a tree of workers (with work functions).  The tree is resolved, converting workers to results.
 
+The basic unit of image processing is the `ImageResult`.  New emoji functions take some number of `ImageResult`s as arguments (which are automatically set to be the same size).  They are automatically cleaned up afterward, although you should ensure that intermediate results are added to the final result.
+
+ImageResults can contain errors, and the `ImageWorker` propagates these along if they arise.
+
+
+## Debugging tips
+
+* Some files have `debug = false` in them, which can be set to true for extra console logging messages.  Stop piping test output to `faucet` in order to see those.
+* Specifying a directory in the environment variable `MACRAMOJI_DEBUG_TMP` will create temp images there (instead of in `/tmp`), and not delete them after the test has completed.  The filenames will also be sequential, which can aid in troubleshooting GM.
+
 
 ## Packaging for npm
 
