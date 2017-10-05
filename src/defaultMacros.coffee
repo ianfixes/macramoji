@@ -69,81 +69,110 @@ splosion = (paths, cb) ->
     imageTransform.resultFromGM imageMagick(), workFn, cb, "gif"
 
 # Make glasses fall from the sky
+# the strategy here is complex.  first we put the glasses in their final location
+# then we successively offset them upward until they go out of the frame
+#  (we diff the 2 frames to detect this in notTooHigh())
+# then we assemble the frames in reverse order in onFramesAvailable()
 dealwithit = (paths, cb) ->
-  glasses = paths[1] || path.join(__dirname, '..', 'data', 'img', 'dealwithit_glasses.png')
+  baseImage = paths[0]
+  desiredGlasses = paths[1]
   frames = []
 
+  # onGlassesAndResult cb takes (path, tempImageResult)
+  getGlasses = (maybeGlasses, size, onGlassesAndResult) ->
+    return onGlassesAndResult(maybeGlasses) if maybeGlasses
+    defaultGlasses = path.join(__dirname, '..', 'data', 'img', 'dealwithit_glasses.png')
+    console.log("Rendering glasses to #{size}")
+    imageTransform.normalizePath defaultGlasses, size, (scaled) ->
+      onGlassesAndResult(scaled.imgPath(), scaled)
+
+
   # start with the size -- used to calc speed and offset
-  getImgInfo paths[0], (err, info) ->
+  getImgInfo baseImage, (err, info) ->
     # TODO: something with err
-    realInput = if info.isAnimated then ["#{paths[0]}[-1]"] else [paths[0]]
+    console.log("getImgInfo: #{err}") if err
+    console.log(JSON.stringify(info)) unless info["size"]
     size = info["size"]
     maxDim = if size.width > size.height then size.width else size.height
-    offset = 0
-    increment = 4 #Math.max(1, Math.ceil(maxDim / 32))
 
-    # final wrapup function
-    onFramesAvailable = (err) ->
-      workFn = (inputGm) ->
-        # TODO: assemble all the frames.  first and last should get some longer delays
-        fl = frames[0].path    # remember, array is in reverse so last frame is 0
-        ff = paths[0]
-        midframes = frames.slice(1, frames.length - 2)
-        appendFrame = (acc, elem) ->
-          acc.in.apply(acc, [elem.path])
+    # we have to do a big song and dance here. when we generate frames and page/offset
+    # the glasses image, GM acts weird if we need to resize it too --
+    # movements of only a few pixels aren't registered.
+    # So we normalize the default glasses and then move
+    getGlasses desiredGlasses, maxDim, (glasses, glassesResult) ->
 
-        if info.isAnimated
-          outputGm = inputGm.in("-dispose", "Previous").in("-alpha", "on").in("-background", "none").in(ff)
-        else
-          outputGm = inputGm.in("-dispose", "Previous").in("-delay", "100").in(ff)
-        outputGm = midframes.reduceRight appendFrame, outputGm.in("-delay", "8")
-        outputGm = outputGm.in("-dispose", "Previous").in("-delay", "200").in(fl)
-        outputGm = outputGm.in("-loop", "0")
-        console.log("onFramesAvailable: #{outputGm.args()}") if debug
-        outputGm
+      realInput = if info.isAnimated then ["#{baseImage}[-1]"] else [baseImage]
+      offset = 0
 
-      # final callback wrapper to put in all temp images
-      addTempImages = (result) ->
-        result.addTempImages(frames)
-        cb(result)
+      # we'd prefer to move the glasses further each step on bigger images
+      # but on small images, moves below 4px are (bizarrely) invisible in GM
+      # so we mess with the time instead.  shooting for roughly .5 seconds of drop
+      spaceIncrement = Math.max(1, Math.ceil(maxDim / 32))
+      timeIncrement = Math.max(1, Math.ceil(160 / (maxDim / spaceIncrement)))
 
-      imageTransform.resultFromGM imageMagick(), workFn, addTempImages, "gif"
+      # final wrapup function
+      onFramesAvailable = (err) ->
+        workFn = (inputGm) ->
+          # TODO: assemble all the frames.  first and last should get some longer delays
+          fl = frames[0].path    # remember, array is in reverse so last frame is 0
+          ff = baseImage
+          midframes = frames.slice(1, frames.length - 2)
+          appendFrame = (acc, elem) ->
+            acc.in.apply(acc, [elem.path])
 
-    # truth function for the async.during call
-    notTooHigh = (callback) ->
-      return callback(null, true) if frames.length < 2
-      return callback(null, false) if offset > maxDim * 2
-      # when 2 images are not equal, we are not too high with the glasses.
-      # when glasses go out of frame, the 2 images WILL be equal
-      f1 = frames[frames.length - 1].path
-      f2 = frames[frames.length - 2].path
-      gm.compare f1, f2, 0, (err, isEqual, equality, raw) ->
-        console.log("GM err #{err}") if err && debug
-        callback(err, !isEqual)
+          if info.isAnimated
+            outputGm = inputGm.in("-dispose", "Previous").in("-alpha", "on").in("-background", "none").in(ff)
+          else
+            outputGm = inputGm.in("-dispose", "Previous").in("-delay", "100").in(ff)
+          outputGm = midframes.reduceRight appendFrame, outputGm.in("-delay", timeIncrement.toString())
+          outputGm = outputGm.in("-dispose", "Previous").in("-delay", "200").in(fl)
+          outputGm = outputGm.in("-loop", "0")
+          console.log("onFramesAvailable: #{outputGm.args()}") if debug
+          outputGm
 
-    # iteration function for the async.during call
-    generateFrame = (callback) ->
-      # start with a temp image
-      ImageContainer.fromNewTempFile (err, imgContainer) ->
-        return callback(err) if err
-        frames.push(imgContainer)
+        # final callback wrapper to put in all temp images
+        addTempImages = (result) ->
+          result.addTempImages(frames)
+          result.mergeTempImages(glassesResult) if glassesResult
+          cb(result)
 
-        temp = [
-          ["-alpha", "on"],
-          ["-size", "#{maxDim}x#{maxDim}"],
-          ["-background", "none"],
-          ["-page", "+0+0", realInput],
-          ["-page", "-0-#{offset}", "\(", glasses, "-resize", "#{maxDim}x#{maxDim}", "\)"]
-          ["-layers", "flatten"],
-        ].reduce ((acc, elem) -> acc.in.apply(acc, elem)), imageMagick()
+        imageTransform.resultFromGM imageMagick(), workFn, addTempImages, "gif"
 
-        offset = offset + increment
-        console.log("generateFrame: #{temp.args()}") if debug
-        temp.write imgContainer.path, (err, result) ->
+      # truth function for the async.during call
+      notTooHigh = (callback) ->
+        return callback(null, true) if frames.length < 2
+        return callback(null, false) if offset > maxDim * 2
+        # when 2 images are not equal, we are not too high with the glasses.
+        # when glasses go out of frame, the 2 images WILL be equal
+        f1 = frames[frames.length - 1].path
+        f2 = frames[frames.length - 2].path
+        gm.compare f1, f2, 0, (err, isEqual, equality, raw) ->
           console.log("GM err #{err}") if err && debug
-          callback(err, result)
+          callback(err, !isEqual)
 
-    async.during notTooHigh, generateFrame, onFramesAvailable
+      # iteration function for the async.during call
+      generateFrame = (callback) ->
+        # start with a temp image
+        ImageContainer.fromNewTempFile (err, imgContainer) ->
+          return callback(err) if err
+          frames.push(imgContainer)
+
+          temp = [
+            ["-alpha", "on"],
+            ["-size", "#{maxDim}x#{maxDim}"],
+            ["-background", "none"],
+            ["-page", "+0+0", realInput],
+            ["-page", "-0-#{offset}", "\(", glasses, "\)"]
+            ["-layers", "flatten"],
+          ].reduce ((acc, elem) -> acc.in.apply(acc, elem)), imageMagick()
+
+          offset = offset + spaceIncrement
+          console.log("generateFrame: #{temp.args()}") if debug
+          temp.write imgContainer.path, (err, result) ->
+            console.log("GM err #{err}") if err && debug
+            callback(err, result)
+
+      async.during notTooHigh, generateFrame, onFramesAvailable
 
 # shake an image
 intensifies = (paths, cb) ->
