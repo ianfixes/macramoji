@@ -1,8 +1,13 @@
-tmp = require 'tmp'
 fs  = require 'fs'
 gm  = require 'gm'
 path = require 'path'
 callerId = require 'caller-id'
+
+# set up tmp, or mock it for debugging
+tmp = require 'tmp'
+if process.env.MACRAMOJI_DEBUG_TMP
+  MockTmp = require './tmpDebug'
+  tmp = new MockTmp(process.env.MACRAMOJI_DEBUG_TMP)
 
 containers = {}
 

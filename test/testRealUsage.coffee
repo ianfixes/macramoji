@@ -49,6 +49,7 @@ test "Real uses", (troot) ->
   # keep a list of outputs we've made
   createArtifact = (inputPath, filename) ->
     outputPath = outPath(filename)
+    console.log("Saving #{inputPath} to #{outputPath}")
     fs.createReadStream(inputPath).pipe(fs.createWriteStream(outputPath))
     artifacts.push
       name: fileNoExt(filename)
@@ -65,7 +66,7 @@ test "Real uses", (troot) ->
         t.ok(slackResp.imgResult, "image result exists")
         t.ok(slackResp.imgResult.imgPath(), "image result path exists")
         t.ok(slackResp.fileDesc, "fileDesc exists")
-        createArtifact(slackResp.imgResult.imgPath(), slackResp.fileDesc)
+        createArtifact(slackResp.imgResult.imgPath(), slackResp.fileDesc + outputSuffix)
         #slackResp.cleanup()
         #t.deepEqual(value for own _, value of ImageContainer.activeContainers(), [])
         t.end()
@@ -81,6 +82,8 @@ test "Real uses", (troot) ->
   testInput "dealwithit(:rage1:, :kamina:)", ".gif"
   testInput "dealwithit(:rage1_id:, :kamina:)", ".gif"
   testInput "dealwithit(dealwithit(:rage1_id:), :kamina:)", ".gif"
+  testInput "dealwithit(dealwithit(:poop:), :kamina:)", ".gif"
+  testInput "dealwithit(dealwithit(:rage1_id:, :kamina:))", ".gif"
   testInput "dealwithit(dealwithit(:pineapple:), :kamina:)", ".gif"
   testInput "splosion(:rage1:)", ".gif"
   testInput "splosion(:rage1_id:)", ".gif"
@@ -95,6 +98,8 @@ test "Real uses", (troot) ->
   testInput "identity(:muscle:)", ".gif"
   for num in [1..6]
     do (num) -> testInput "skintone_#{num}(:muscle:)", ".png"
+  for num in [1..6]
+    do (num) -> testInput "skintone_#{num}(:rage1:)", ".png"
 
   # generate HTML report from all those outputs
   test "creates report", (t) ->
