@@ -34,13 +34,15 @@ ImageResults can contain errors, and the `ImageWorker` propagates these along if
 
 Note to the maintainer
 
-* Commit all desired changes
+* Merge pull request with new features
+* `git stash save`
+* `git pull --rebase`
 * Bump the version in `package.json`
 * Update the sections of `CHANGELOG.md`
 * `git add package.json CHANGELOG.md`
 * `git commit -m "vVERSION bump"`
-* Open & merge pull request with new features, keeping version bump commit on top
 * `git tag -a vVERSION -m "Released version VERSION"`
 * `npm publish`
+* `git stash pop`
 * `git pull --rebase`
 * `git push upstream --tags`

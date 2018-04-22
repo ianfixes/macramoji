@@ -1,6 +1,6 @@
 # Macramoji
 [![npm version](https://badge.fury.io/js/macramoji.svg)](https://badge.fury.io/js/macramoji)
-[![Build Status](https://travis-ci.org/ifreecarve/macramoji.svg)](https://travis-ci.org/ifreecarve/macramoji)
+[![Build Status](https://travis-ci.org/ianfixes/macramoji.svg)](https://travis-ci.org/ianfixes/macramoji)
 
 A slack-centric programming language for altering emoji
 
